@@ -13,6 +13,10 @@
 //   update: v1.4.3 Added HEX colors Rombout Versluijs
 //   update: v1.4.4 Added Split by Color Component Rombout Versluijs
 //   update: v1.4.5 Added Color Space selection dialog + saves settings
+//   update: v1.4.6 Added option to use on selection
+//   update: v1.4.7 Added to strip separator for HEX
+
+//   Add option to use selection as well.
 
 // LAB values by Carlos Canto - 09/16/2020
 // reference: https://community.adobe.com/t5/illustrator/illustrator-javascript-render-swatch-legend-lab-colour-values-incorrect/m-p/11438710?page=2#M244722
@@ -101,6 +105,13 @@ var separatorStr = splitCompsGrp.add('edittext {properties: {name: "separatorStr
     separatorStr.preferredSize.height = 20; 
     separatorStr.alignment = ["center","center"]; 
 
+
+var joinHexChbk = splitCompsGrp.add("checkbox", undefined, undefined, {name: "joinHexChbk"}); 
+    joinHexChbk.helpTip = "Joins the HEX values by removing the separator"; 
+    joinHexChbk.preferredSize.height = 20; 
+    joinHexChbk.value = swatchInfo.joinHex; 
+    joinHexChbk.alignment = ["center","center"]; 
+
 var splitCompsChbk = splitCompsGrp.add("checkbox", undefined, undefined, {name: "splitCompsChbk"}); 
     splitCompsChbk.helpTip = "Split color component name by value. eg it shows CMYK 0 100 100 0 when off, C: 0 M: 100 Y:100 K:0 when checked"; 
     splitCompsChbk.preferredSize.height = 20; 
@@ -126,8 +137,11 @@ var separatorGrp = optionsPnl.add("group", undefined, {name: "separatorGrp"});
 
 var separatorLbl = separatorGrp.add("statictext", undefined, undefined, {name: "separatorLbl"}); 
     separatorLbl.text = "Separator"; 
-    separatorLbl.text = "Separator"; 
-    separatorLbl.preferredSize.height = 20; 
+    separatorLbl.preferredSize.height = 15; 
+
+var skipHexLbl = separatorGrp.add("statictext", undefined, undefined, {name: "skipHexLbl"}); 
+    skipHexLbl.text = "Join HEX"; 
+    skipHexLbl.preferredSize.height = 20; 
 
 var splitCompLbl = separatorGrp.add("statictext", undefined, undefined, {name: "splitCompLbl"}); 
     splitCompLbl.text = "Split Components"; 
@@ -226,6 +240,7 @@ var okBtn = dialogBtnGroup.add("button", undefined, undefined, {name: "okBtn"});
     swatchInfo.grayChkb = grayChkb.value;
     swatchInfo.colorSpaces = [swatchInfo.hexChkb, swatchInfo.rgbChkb, swatchInfo.cmykChkb, swatchInfo.labChkb, swatchInfo.grayChkb];
     swatchInfo.colorSeparator = separatorStr.text;
+    swatchInfo.joinHex = joinHexChbk.value;
     swatchInfo.splitColorComponents = splitCompsChbk.value;
     swatchInfo.textSize = Number(textSizeStr.text);
     return result;
@@ -342,7 +357,15 @@ function getColorValues(c, spot) {
                         outputColors[i][j] += "\r";
                     };
                 };
-                outputColors[i] = outputColors[i].join(" "+swatchInfo.colorSeparator);
+                // outputColors[i] = outputColors[i].join(" "+swatchInfo.colorSeparator);
+                if(printColors[i] == "HEX" && swatchInfo.joinHex){
+                    separator = outputColors[i].join("");
+                    // alert(HEX)
+                } else {
+                    // separator = outputColors[i].join(" "+swatchInfo.colorSeparator);
+                    separator = outputColors[i].join(swatchInfo.colorSeparator);
+                }
+                outputColors[i] = separator;
                 if(!swatchInfo.splitColorComponents) outputColors[i] = printColors[i]+" "+outputColors[i]
             }
         };
@@ -421,6 +444,7 @@ function initSwatchInfo(swatchInfo,jsonData) {
         swatchInfo.grayChkb = jsonData.grayChkb;
         swatchInfo.colorSpaces = jsonData.colorSpaces;
         swatchInfo.colorSeparator = jsonData.colorSeparator; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
+        swatchInfo.joinHex = jsonData.joinHex; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
         swatchInfo.splitColorComponents = jsonData.splitColorComponents;
         swatchInfo.textSize = jsonData.textSize; // output text size value in points
     } else {
@@ -431,6 +455,7 @@ function initSwatchInfo(swatchInfo,jsonData) {
         swatchInfo.grayChkb = false;
         swatchInfo.colorSpaces = [swatchInfo.hexChkb, swatchInfo.rgbChkb, swatchInfo.cmykChkb, swatchInfo.labChkb, swatchInfo.grayChkb];
         swatchInfo.colorSeparator = " "; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
+        swatchInfo.joinHex = false;
         swatchInfo.splitColorComponents = false;
         swatchInfo.textSize = 10; // output text size value in points
     }
@@ -483,6 +508,7 @@ function saveToJSON(swatchInfo){
     grayChkb =swatchInfo.grayChkb;
     colorSpaces =swatchInfo.colorSpaces;
     colorSeparator =swatchInfo.colorSeparator;
+    joinHex =swatchInfo.joinHex;
     splitColorComponents =swatchInfo.splitColorComponents;
     textSize =swatchInfo.textSize;
     var swatchLegenda = {
@@ -493,6 +519,7 @@ function saveToJSON(swatchInfo){
         grayChkb : grayChkb,
         colorSpaces : [hexChkb, rgbChkb, cmykChkb, labChkb, grayChkb],
         colorSeparator : colorSeparator,
+        joinHex : joinHex,
         splitColorComponents : splitColorComponents,
         textSize : textSize,
     };
@@ -562,3 +589,97 @@ open saved object:
     file.close();
 
 */
+
+
+
+
+var item = "";
+for (var i = 0; i < doc.selection.length; i++) {
+    var item = app.activeDocument.selection[i];
+	getBasicColorsFromItem(item);
+}
+/**
+* Source: https://community.adobe.com/t5/illustrator-discussions/get-spot-colors-from-selected-object-group-objects/m-p/13356189#M344245
+* Returns array of swatches or colors
+* found in fill or stroke of page item.
+* @author m1b
+* @version 2022-10-11
+* @param {PageItem} item - an Illustrator page item.
+* @returns {Object} -  {fillColors: Array<Color>, strokeColors: Array<Color>}
+*/
+function getBasicColorsFromItem(item) {
+    if (item == undefined)
+        throw Error('getItemColor: No item supplied.');
+    var noColor = "[NoColor]",
+        colorables = [],
+        foundColors = {
+            fillColors: [],
+            strokeColors: []
+        };
+    // collect all the colorables
+    if (item.constructor.name == 'PathItem') {
+        colorables.push(item);
+		getPMSColor(item, item);
+    } else if (item.constructor.name == 'CompoundPathItem' && item.pathItems) {
+        colorables.push(item.pathItems[0]);
+		// alert("CompoundPathItem")
+		getPMSColor(item.pathItems[0], item.pathItems[0]);
+    } else if (item.constructor.name == 'TextFrame' && item.textRanges) {
+        for (var i = item.textRanges.length - 1; i >= 0; i--)
+            colorables.push({
+                fillColor: item.textRanges[i].characterAttributes.fillColor,
+                strokeColor: item.textRanges[i].characterAttributes.strokeColor
+            });
+    }
+    if (colorables.length > 0)
+        for (var i = 0; i < colorables.length; i++) {
+            if (
+                colorables[i].hasOwnProperty('fillColor')
+                && colorables[i].fillColor != noColor
+                && (
+                    !colorables[i].hasOwnProperty('filled')
+                    || colorables[i].filled == true
+                )
+                && colorables[i].fillColor != undefined
+            )
+                foundColors.fillColors.push(colorables[i].fillColor);
+            if (
+                colorables[i].hasOwnProperty('strokeColor')
+                && colorables[i].strokeColor != noColor
+                && (
+                    colorables[i].constructor.name == 'CharacterAttributes'
+                    || colorables[i].stroked == true
+                )
+                && colorables[i].strokeColor != undefined
+            )
+                foundColors.strokeColors.push(colorables[i].strokeColor);
+        }
+    else if (item.constructor.name == 'GroupItem') {
+        // add colors from grouped items
+        for (var i = 0; i < item.pageItems.length; i++) {
+			getBasicColorsFromItem(item.pageItems[i]);
+        }
+    }
+};
+
+
+function renderLegends(swatchInfo){
+    swatchInfo = swatchInfo;
+    for (var c = 0, len = swatches.length; c < len; c++) {
+        var swatchGroup = doc.groupItems.add();
+        swatchGroup.name = swatches[c].name;
+        x = (w + h_pad) * ((c) % cols);
+        y = (h + v_pad) * (Math.round(((c+2) + .03) / cols)) * -1;
+        rectRef = doc.pathItems.rectangle(y, x, w, h);
+        swatchColor = swatches[c].color;
+        rectRef.fillColor = swatchColor;
+        textRectRef = doc.pathItems.rectangle(y - t_v_pad, x + t_h_pad, w - (2 * t_h_pad), h - (2 * t_v_pad));
+        textRef = doc.textFrames.areaText(textRectRef);
+        textRef.contents = swatches[c].name + "\r" + getColorValues(swatchColor);
+        textRef.textRange.fillColor = is_dark(swatchColor) ? white : black;
+        textRef.textRange.size = swatchInfo.textSize;
+        rectRef.move(swatchGroup, ElementPlacement.PLACEATBEGINNING);
+        textRef.move(swatchGroup, ElementPlacement.PLACEATBEGINNING);
+        swatchGroup.move(newGroup, ElementPlacement.PLACEATEND);
+    }
+}
