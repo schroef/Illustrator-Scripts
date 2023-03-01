@@ -148,7 +148,7 @@ var splitCompLbl = separatorGrp.add("statictext", undefined, undefined, {name: "
     splitCompLbl.preferredSize.height = 20; 
 
 var textSizeLbl = separatorGrp.add("statictext", undefined, undefined, {name: "textSizeLbl"}); 
-    // textSizeLbl.text = "Text Size"; 
+    textSizeLbl.text = "Text Size"; 
     textSizeLbl.preferredSize.height = 20; 
 
 // SEPARATORGRP1
