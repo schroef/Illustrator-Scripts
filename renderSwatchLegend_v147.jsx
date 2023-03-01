@@ -137,7 +137,7 @@ var separatorGrp = optionsPnl.add("group", undefined, {name: "separatorGrp"});
 
 var separatorLbl = separatorGrp.add("statictext", undefined, undefined, {name: "separatorLbl"}); 
     separatorLbl.text = "Separator"; 
-    separatorLbl.preferredSize.height = 15; 
+    separatorLbl.preferredSize.height = 20; 
 
 var skipHexLbl = separatorGrp.add("statictext", undefined, undefined, {name: "skipHexLbl"}); 
     skipHexLbl.text = "Join HEX"; 
