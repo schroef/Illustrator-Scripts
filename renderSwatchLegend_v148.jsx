@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////
-// Render Swatch Legend v1.4.5 -- CC
+// Render Swatch Legend v1.4.8 -- CC
 //>=--------------------------------------
 //
 //  This script will generate a legend of rectangles for every swatch in the main swatches palette.
