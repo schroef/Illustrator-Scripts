@@ -367,7 +367,7 @@ function calculateArea (obj) {
         // alert(itemsObj)
         // alert("Group Item > path items : ", obj.pathItems.length, "compound path items : ", obj.compoundPathItems.length,"group items : %s", obj.groupItems.length)
 		for (var i=0; i<obj.pathItems.length; i++) {
-            if(obj.pathItems.length > 2){
+            if(obj.pathItems.length > obj.pathItems.length+1){
                 alert("compound shape more then 2 shapes")
                 // alert(obj.pathItems.length)
                 // alert(obj.pathItems[i].typename)
