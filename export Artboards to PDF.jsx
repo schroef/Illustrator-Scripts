@@ -4,10 +4,25 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 {"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"exportDialog","windowType":"Dialog","creationProps":{"su1PanelCoordinates":false,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Export Artboards to PDF","preferredSize":[0,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["fill","top"]}},"item-1":{"id":1,"type":"Panel","parentId":33,"style":{"enabled":true,"varName":"exportSettingsPnl","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Options","preferredSize":[0,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-2":{"id":2,"type":"Group","parentId":1,"style":{"enabled":true,"varName":"destFolderGrp","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","fill"],"alignment":null}},"item-3":{"id":3,"type":"StaticText","parentId":2,"style":{"enabled":true,"varName":"destFolderLbl","creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Folder","justify":"left","preferredSize":[60,0],"alignment":null,"helpTip":null}},"item-4":{"id":4,"type":"EditText","parentId":2,"style":{"enabled":true,"varName":"exportPathTxt","creationProps":{"noecho":false,"readonly":false,"multiline":false,"scrollable":false,"borderless":false,"enterKeySignalsOnChange":false},"softWrap":false,"text":"Set export folder...","justify":"left","preferredSize":[250,0],"alignment":null,"helpTip":null}},"item-5":{"id":5,"type":"Button","parentId":2,"style":{"enabled":true,"varName":"expFodlerBtn","text":"Choose","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-6":{"id":6,"type":"Group","parentId":1,"style":{"enabled":true,"varName":"pdfSetingsGrp","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","fill"],"alignment":null}},"item-7":{"id":7,"type":"DropDownList","parentId":6,"style":{"enabled":true,"varName":"pdfSettingsDD","text":"DropDownList","listItems":"Item 1, -, Item 2","preferredSize":[150,0],"alignment":null,"selection":0,"helpTip":null}},"item-8":{"id":8,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":"pdfSettingsLbl","creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Preset","justify":"left","preferredSize":[60,0],"alignment":null,"helpTip":null}},"item-9":{"id":9,"type":"Group","parentId":1,"style":{"enabled":true,"varName":"expArtboardsGrp","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","fill"],"alignment":null}},"item-10":{"id":10,"type":"StaticText","parentId":9,"style":{"enabled":true,"varName":"expArtbordsLbl","creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Artboards","justify":"left","preferredSize":[60,0],"alignment":null,"helpTip":null}},"item-11":{"id":11,"type":"EditText","parentId":9,"style":{"enabled":true,"varName":"setExportArtbordsTxt","creationProps":{"noecho":false,"readonly":false,"multiline":false,"scrollable":false,"borderless":false,"enterKeySignalsOnChange":false},"softWrap":false,"text":"Set range...","justify":"left","preferredSize":[150,0],"alignment":null,"helpTip":null}},"item-12":{"id":12,"type":"Group","parentId":1,"style":{"enabled":true,"varName":"prefixGrp","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","fill"],"alignment":null}},"item-13":{"id":13,"type":"StaticText","parentId":12,"style":{"enabled":true,"varName":"prefixLbl","creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Prefix","justify":"left","preferredSize":[60,0],"alignment":null,"helpTip":null}},"item-14":{"id":14,"type":"EditText","parentId":12,"style":{"enabled":true,"varName":"prefixTxt","creationProps":{"noecho":false,"readonly":false,"multiline":false,"scrollable":false,"borderless":false,"enterKeySignalsOnChange":false},"softWrap":false,"text":"Set prefix...","justify":"left","preferredSize":[250,0],"alignment":null,"helpTip":null}},"item-15":{"id":15,"type":"Group","parentId":1,"style":{"enabled":true,"varName":"suffixGrp","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","fill"],"alignment":null}},"item-16":{"id":16,"type":"StaticText","parentId":15,"style":{"enabled":true,"varName":"suffixLbl","creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Suffix","justify":"left","preferredSize":[60,0],"alignment":null,"helpTip":null}},"item-17":{"id":17,"type":"EditText","parentId":15,"style":{"enabled":true,"varName":"suffixTxt","creationProps":{"noecho":false,"readonly":false,"multiline":false,"scrollable":false,"borderless":false,"enterKeySignalsOnChange":false},"softWrap":false,"text":"Set suffix...","justify":"left","preferredSize":[250,0],"alignment":null,"helpTip":null}},"item-18":{"id":18,"type":"Group","parentId":0,"style":{"enabled":true,"varName":"dialogBtn","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","fill"],"alignment":null}},"item-19":{"id":19,"type":"Button","parentId":63,"style":{"enabled":true,"varName":"cancelBtn","text":"Cancel","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":""}},"item-20":{"id":20,"type":"Button","parentId":63,"style":{"enabled":true,"varName":"canceok","text":"Export","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-21":{"id":21,"type":"Group","parentId":18,"style":{"enabled":true,"varName":"expProgressGrp","preferredSize":[350,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-25":{"id":25,"type":"Group","parentId":21,"style":{"enabled":true,"varName":"expInfoProgressGrp","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","fill"],"alignment":null}},"item-26":{"id":26,"type":"StaticText","parentId":25,"style":{"enabled":true,"varName":"blancoLbl","creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"","justify":"left","preferredSize":[75,0],"alignment":null,"helpTip":null}},"item-28":{"id":28,"type":"Group","parentId":21,"style":{"enabled":true,"varName":"expInfosTxtGrp","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["center","fill"],"alignment":null}},"item-29":{"id":29,"type":"StaticText","parentId":28,"style":{"enabled":true,"varName":"blancoLbl","creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"","justify":"left","preferredSize":[75,0],"alignment":null,"helpTip":null}},"item-30":{"id":30,"type":"StaticText","parentId":28,"style":{"enabled":true,"varName":"exportInfoLbl","creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"12 Artbords from","justify":"left","preferredSize":[0,0],"alignment":"fill","helpTip":null}},"item-31":{"id":31,"type":"Progressbar","parentId":25,"style":{"enabled":true,"varName":"progressBar","preferredSize":[50,4],"alignment":null,"helpTip":null}},"item-32":{"id":32,"type":"VerticalTabbedPanel","parentId":0,"style":{"enabled":true,"varName":"vertTabbedPnl","preferredSize":[0,0],"tabNavWidth":0,"margins":0,"alignment":null,"selection":33}},"item-33":{"id":33,"type":"Tab","parentId":32,"style":{"enabled":true,"varName":"exportSettingsTab","text":"Export    ","orientation":"column","spacing":10,"alignChildren":["fill","top"]}},"item-34":{"id":34,"type":"Tab","parentId":32,"style":{"enabled":true,"varName":"pdfSettingsTab","text":"Settings    ","orientation":"column","spacing":10,"alignChildren":["fill","top"]}},"item-35":{"id":35,"type":"Panel","parentId":34,"style":{"enabled":true,"varName":"pdfSettingsPnl","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Options","preferredSize":[0,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-59":{"id":59,"type":"Checkbox","parentId":35,"style":{"enabled":true,"varName":"preserveEditiballityCHb","text":"Preserve Illustrator edtting capabilities","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-60":{"id":60,"type":"Checkbox","parentId":35,"style":{"enabled":true,"varName":"embedThumbsCHb","text":"Embed Page Thumbnails","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-61":{"id":61,"type":"Checkbox","parentId":35,"style":{"enabled":true,"varName":"createLayersCHb","text":"Create Acrobat Layers from Top-Level Layers","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-62":{"id":62,"type":"Checkbox","parentId":35,"style":{"enabled":true,"varName":"optimizePdfCHb","text":"Optimize for Fast Web View","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-63":{"id":63,"type":"Group","parentId":18,"style":{"enabled":true,"varName":"dialogBtnGrp","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}}},"order":[0,32,33,1,2,3,4,5,12,13,14,15,16,17,9,10,11,6,8,7,34,35,59,62,60,61,18,21,25,26,31,28,29,30,63,19,20],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"},"activeId":26}
 */ 
 
+///////////////////////////////////////////
+// TODO
+// Fix prefix and suffix are not stored
+///////////////////////////////////////////
+
+///////////////////////////////////////////
+// KEEPACHANGELOG
+
+// 2023-08-22 v.0.0.6
+// Fixed
+// - Prefix and suffix was not saved to settings
+// - Bleed was added as points, but not converted properly > WIP needs input value dropdown
+
+///////////////////////////////////////////
+
 // EXPORTDIALOG
 // ============
 var exportDialog = new Window("dialog"); 
-    exportDialog.text = "Export Artboards to PDF"; 
+    exportDialog.text = "Export Artboards to PDF v0.0.6"; 
     exportDialog.orientation = "column"; 
     exportDialog.alignChildren = ["fill","top"]; 
     exportDialog.spacing = 10; 
@@ -692,12 +707,30 @@ function savePDF(destFolder, prefix, suffix, activeAB, abIndex, pdfPreset){
     // bleedLink wont work without knowing doc bleed settings
     // saveOptions.bleedLink = true;
     // saveOptions.bleedLink = Boolean(useDocBleedChb.value);
-    var left = Number(convertToUnit(bleedLeftTxt.text, "mm"));
-    var top =  Number(convertToUnit(bleedTopTxt.text, "mm"));
-    var right = Number(convertToUnit(bleedRightTxt.text, "mm"));
-    var bottom = Number(convertToUnit(bleedBottomTxt.text, "mm"));
-    // saveOptions.bleedOffsetRect = [10];
+    
+    // Wrong return, returns points > input points not mm
+    var left = Number(convertToUnit(bleedLeftTxt.text, "pt"));
+    var top =  Number(convertToUnit(bleedTopTxt.text, "pt"));
+    var right = Number(convertToUnit(bleedRightTxt.text, "pt"));
+    var bottom = Number(convertToUnit(bleedBottomTxt.text, "pt"));
     saveOptions.bleedOffsetRect = [left,top,right,bottom]; // L T R B
+
+    // var left = convertBleed(bleedLeftTxt.text);
+    // var top =  convertBleed(bleedTopTxt.text);
+    // var right = convertBleed(bleedRightTxt.text);
+    // var bottom = convertBleed(bleedBottomTxt.text);
+
+    // var left = convertBleed(bleedLeftTxt.text)
+    // alert(convertBleed(bleedLeftTxt.text))
+    // alert(left["mm"])
+    // var l = left["mm"];
+    // var t = top["mm"];
+    // var r = right["mm"];
+    // var b = bottom["mm"];
+    // saveOptions.bleedOffsetRect = [l,t,r,b]; // L T R B
+
+    // alert(convertToUnit(bleedLeftTxt.text, "pt"))
+    // saveOptions.bleedOffsetRect = [10];
     // saveOptions.bleedOffsetRect.0 = 10,
     // saveOptions.bleedOffsetRect.1 = 10,
     // saveOptions.bleedOffsetRect.2 = 10,
@@ -717,7 +750,8 @@ function savePDF(destFolder, prefix, suffix, activeAB, abIndex, pdfPreset){
     // alert(activeAB)
     // alert(abIndex)
     // alert(pdfPreset)
-    destPath = new File(destFolder +'/'+ prefix+activeAB.name+suffix);
+    // alert(activeAB.name)
+    destPath = new File(destFolder +'/'+ prefix+activeAB.name+suffix+".pdf");
     // var destPath = new File(destFolder +'/'+ activeAB.name);
     // alert(destPath)
     getSettings()
@@ -928,6 +962,9 @@ var prefs = {}
 function getSettings(){
     // Export tab
     prefs.destPath = destFolder.toString();
+    prefs.prefix = prefixTxt.text;
+    prefs.suffix = suffixTxt.text;
+
     prefs.activeTab = vertTabbedPnl_nav.selection.index; 
     // prefs.progressVisible = progressBar.visible; 
     prefs.pdfPreset = pdfSettingsDD.selection.index; //pdfPreset.toString();
@@ -982,8 +1019,8 @@ function readSettings(){
         vertTabbedPnl_nav.selection = prefs.activeTab;
 
         exportPathTxt.text = prefs.destPath;
-        prefixTxt.text = prefs.prefix !="" ? "" : prefs.prefix;
-        suffixTxt.text = prefs.suffix !="" ? "" : prefs.suffix;
+        prefixTxt.text = prefs.prefix =="" ? "" : prefs.prefix;
+        suffixTxt.text = prefs.suffix =="" ? "" : prefs.suffix;
         setExportArtbordsTxt.text = prefs.artboardRange;
         pdfSettingsDD.selection = prefs.pdfPreset; //pdfPreset.toString();
         
@@ -1018,6 +1055,35 @@ function readSettings(){
         vertTabbedPnl_nav.selection = 0;
     }
     showTab_vertTabbedPnl() 
+}
+
+
+function convertBleed (bleed) {
+	var ppi = 72;
+	var result = {};
+	// result.inch = bleed/ppi/ppi;
+	result.inch = bleed/ppi;
+    // https://www.conversionunites.com/converter-cm-to-mm
+	// https://www.mathsteacher.com.au/year7/ch13_area/02_calc/area.htm
+	// https://www.calculateme.com/length/centimeters/to-millimeters/16
+    // https://www.unitconverters.net/typography/centimeter-to-pixel-x.htm
+    // https://www.blitzresults.com/en/pixel/
+    // https://graphicdesign.stackexchange.com/questions/199/point-vs-pixel-what-is-the-difference#:~:text=If%20your%20image%20is%2072ppi,will%20equal%20exactly%20one%20pixel.&text=Point%20is%20a%20physical%20unit%20of%20length%2C%20used%20in%20typography.&text=So%201%20pt%20%3D%201%2F72,%2C%201%20point%20%3D%201%20pixel.
+    // https://www.researchgate.net/post/Can_anyone_help_me_in_conversion_of_Area_from_Sqpixels_to_Sqmm
+    // https://community.adobe.com/t5/illustrator/is-there-a-way-to-calculate-the-area-of-a-shape/m-p/1181381#:~:text=Open%20the%20Measuring%20toolbar%20(View,the%20area%20will%20be%20displayed.
+	result.cm = result.inch * 6.4516;
+	result.m = result.cm  / 10000; // https://sciencing.com/convert-cm-meters-squared-8111525.html
+	result.mm = result.cm  * 100; //10 mm > 1cm;
+	result.pt = bleed; //result.mm * 28.346438836889; // 1cm > 28.3465 pt; 
+	// result.pt = result.cm * 803.524062; // 1cm > 28.3465 pt; 
+    result.pc = result.cm  * 23.622049104098; // 1cm > 23.622049104098 pica; > 2.3622047244
+	// result.px = result.cm  * 3.7795275591; // 1cm > 37.795275591 pixel > 96dpi 
+    // alert(area)
+	// result.px = result.mm * 28.3464567; // 1cm > 28.3464567 pixel; > photoshop?!? > 72 / 2.54 = 28.3464567
+	result.px = result.mm * 7.84; // 1cm > 28.3464567 pixel; > photoshop?!? > 72 / 2.54 = 28.3464567
+    //803.521607 = 28.3464567 x 28.3464567
+    // 784 = pixel rounded of 1cm x 1cm = 28px x 28px
+	return result;
 }
 
 
