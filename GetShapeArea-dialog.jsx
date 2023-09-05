@@ -1304,10 +1304,12 @@ function getShapeArea(exportInfo, dup, obj, pos){
         var conv = convertArea(totalArea);
         if(!exportInfo.singleUnit){
             // display.push("Total Area: " + conv[unit[1]].toFixed(decimalPlaces) + unit[1]+"² / " + conv[unit[2]].toFixed(decimalPlaces) + unit[2]+"²");
-            if (exportInfo.useRealArea) display.unshift("Real Area: "+conv['rw'].toFixed(decimalPlaces) +"m²")
+            if (exportInfo.useRealArea) display.unshift("Real Area: "+conv['rw'].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²")
+            // if (exportInfo.useRealArea) display.unshift("Real Area: "+conv['rw'].toFixed(decimalPlaces) +"m²")
             display.unshift("Total Area: " + conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"²");
         } else {
-            if (exportInfo.useRealArea) display.unshift("Real Area: "+conv['rw'].toFixed(decimalPlaces) +"m²")
+            if (exportInfo.useRealArea) display.unshift("Real Area: "+conv['rw'].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²")
+            // if (exportInfo.useRealArea) display.unshift("Real Area: "+conv['rw'].toFixed(decimalPlaces) +"m²")
             display.unshift("Total Area: " + conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"²");
         }
         // remove duplicate pluginItem
