@@ -24,6 +24,13 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 //
 // Dialog Window and additional measurements Rombout Versluijs
 //
+// v0.1.5
+// 2023-09-05
+//
+// Added
+// - Foot to scale
+// - Custom real world square unit
+//
 // v0.1.4
 // 2023-09-05
 //
@@ -305,9 +312,36 @@ function initExportInfo(exportInfo,jsonData) {
     //     exportInfo.unitDoubleTwo = jsonData.unitDoubleTwo;
     //     exportInfo.unitDoubleTwoUndex = jsonData.unitDoubleTwoIndex;
     
-    dataExportInfo = ["",0,true,false,true,true,"",false,0,"1:10",1,false,false,"",0,"",0];
-    dataJson = ["unitSingle","unitSingleIndex","singleUnit","doubleUnit","allShapes","textLabel","textLabelColor","useRealArea","realAreaScale","realAreaValue","decimals","countShapes","intersectingPaths","unitDoubleOne","unitDoubleOneIndex","unitDoubleTwo","unitDoubleTwoIndex"]
+    // dataExportInfo = ["",0,true,false,true,true,"",false,0,"1:10",1,false,false,"",0,"",0];
+    // dataJson = ["unitSingle","unitSingleIndex","singleUnit","doubleUnit","allShapes","textLabel","textLabelColor","useRealArea","realAreaScale","realAreaValue","decimals","countShapes","intersectingPaths","unitDoubleOne","unitDoubleOneIndex","unitDoubleTwo","unitDoubleTwoIndex"]
+
+    
+    //     Template
+    //     unitSingle = exportInfo.unitSingle;
+    //     unitSingleIndex = exportInfo.unitSingleIndex;
+    //     singleUnit = exportInfo.singleUnit;
+    //     doubleUnit = exportInfo.doubleUnit;
+    //     allShapes = exportInfo.allShapes;
+    //     intersectingPaths = exportInfo.intersectingPaths;
+    //     textLabel = exportInfo.textLabel;
+    //     textLabelColor = exportInfo.textLabelColor; 
+    //     useRealArea = exportInfo.useRealArea;
+    //     realAreaScale = exportInfo.realAreaScale;
+    //     realAreaValue = exportInfo.realAreaValue;
+    //     realAreaUnitScale = exportInfo.realAreaUnitScale;
+    //     realAreaUnit = exportInfo.realAreaUnit;
+    //     decimals = exportInfo.decimals;
+    //     countShapes = exportInfo.countShapes;
+    //     unitDoubleOne = exportInfo.unitDoubleOne;
+    //     unitDoubleOneIndex = exportInfo.unitDoubleOneIndex;
+    //     unitDoubleTwo = exportInfo.unitDoubleTwo;
+    //     unitDoubleTwoIndex = exportInfo.unitDoubleTwoIndex;
+    
+    dataExportInfo = ["",0,true,false,true,true,"",false,0,"1:10",0,"m",1,false,false,"",0,"",0, false];
+    dataJson = ["unitSingle","unitSingleIndex","singleUnit","doubleUnit","allShapes","textLabel","textLabelColor","useRealArea","realAreaScale","realAreaValue","realAreaUnitScale","realAreaUnit","decimals","countShapes","unitDoubleOne","unitDoubleOneIndex","unitDoubleTwo","unitDoubleTwoIndex","intersectingPaths"]
+    // alert(dataJson.length)
     for (i=0; i < dataJson.length; i++){
+        // alert(jsonData[dataJson[i]])
         if ( jsonData[dataJson[i]]=== undefined) {
             // alert(dataJson[i]+" "+dataExportInfo[i])
             exportInfo[dataJson[i]] = dataExportInfo[i];
@@ -415,7 +449,7 @@ function settingDialog(exportInfo) {
     // GETSHAPEAREA
     // ============
     var dlgGetShapeArea = new Window("dialog"); 
-        dlgGetShapeArea.text = "Get Shape Area v.0.1.4"; 
+        dlgGetShapeArea.text = "Get Shape Area v0.1.5"; 
         dlgGetShapeArea.orientation = "column"; 
         dlgGetShapeArea.alignChildren = ["center","top"]; 
         dlgGetShapeArea.spacing = 10; 
@@ -442,7 +476,7 @@ function settingDialog(exportInfo) {
     var txtUnit = grpSingleUnit.add("statictext", undefined, undefined, {name: "txtUnit"}); 
         txtUnit.text = "Unit"; 
 
-    var ddSingleUnit_array = ["m","cm","mm","inch","pt","pc","px"]; 
+    var ddSingleUnit_array = ["m","cm","mm","inch","foot","pt","pc","px"]; 
     var ddSingleUnit = grpSingleUnit.add("dropdownlist", undefined, undefined, {name: "ddSingleUnit", items: ddSingleUnit_array}); 
         ddSingleUnit.selection = exportInfo.unitSingleIndex; 
 
@@ -565,7 +599,13 @@ function settingDialog(exportInfo) {
     
     // GRPREALAREA
     // ==============
-    var grpRealArea = grpDoubleUnit.add("group", undefined, {name: "grpRealArea"}); 
+    var grpRealAreaMain = grpDoubleUnit.add("group", undefined, {name: "grpRealAreaMain"}); 
+        grpRealAreaMain.orientation = "column"; 
+        grpRealAreaMain.alignChildren = ["left","center"]; 
+        grpRealAreaMain.spacing = 5; 
+        grpRealAreaMain.margins = 0; 
+
+    var grpRealArea = grpRealAreaMain.add("group", undefined, {name: "grpRealArea"}); 
         grpRealArea.orientation = "row"; 
         grpRealArea.alignChildren = ["left","center"]; 
         grpRealArea.spacing = 10; 
@@ -585,9 +625,23 @@ function settingDialog(exportInfo) {
     var realAreaCustomScale = grpRealArea.add("edittext", undefined, undefined, {name: "ddRealAreaScale"}); 
         realAreaCustomScale.enabled = false;
         realAreaCustomScale.preferredSize.width = 50; 
-        realAreaCustomScale.helpTip = "Input values devided by :. For example; 1:100"; 
-        // realAreaCustomScale.enabled = exportInfo.useRealArea; 
+        realAreaCustomScale.helpTip = "Input values devided by :. For example; 1:100";
+        // realAreaCustomScale.enabled = exportInfo.useRealArea;
 
+     var grpRealAreaRowTwo = grpRealAreaMain.add("group", undefined, {name: "grpRealAreaRowTwo"}); 
+        grpRealAreaRowTwo.orientation = "row"; 
+        grpRealAreaRowTwo.alignChildren = ["left","center"]; 
+        grpRealAreaRowTwo.spacing = 10; 
+        grpRealAreaRowTwo.margins = 0; 
+
+    var spacerOne = grpRealAreaRowTwo.add("statictext", undefined, undefined, {name: "spacerOne"}); 
+        spacerOne.text = ""; 
+        spacerOne.preferredSize.width = 75; 
+
+    var ddRealAreaUnit_array = ["m","cm","mm","inch","foot","pt","pc","px"]; 
+    var ddRealAreaUnit = grpRealAreaRowTwo.add("dropdownlist", undefined, undefined, {name: "ddRealAreaUnit", items: ddRealAreaUnit_array}); 
+        ddRealAreaUnit.items[exportInfo.realAreaUnitScale].selected = true;
+        ddRealAreaUnit.enabled = exportInfo.useRealArea;
 
     var cbShapeArea = grpDoubleUnit.add("checkbox", undefined, undefined, {name: "cbShapeArea"}); 
         cbShapeArea.text = "Show area each shape"; 
@@ -621,7 +675,7 @@ function settingDialog(exportInfo) {
     var txtDoubleUnitsOne = grpDoubleUnitsOne.add("statictext", undefined, undefined, {name: "txtDoubleUnitsOne"}); 
         txtDoubleUnitsOne.text = "Units"; 
 
-    var ddDoubleUnitsOne_array = ["m", "cm","mm","inch","pt","pc","px"]; 
+    var ddDoubleUnitsOne_array = ["m", "cm","mm","inch","foot","pt","pc","px"]; 
     var ddDoubleUnitsOne = grpDoubleUnitsOne.add("dropdownlist", undefined, undefined, {name: "ddDoubleUnitsOne", items: ddDoubleUnitsOne_array}); 
         ddDoubleUnitsOne.selection = exportInfo.unitDoubleOneIndex; 
 
@@ -641,7 +695,7 @@ function settingDialog(exportInfo) {
     // var txtDoubleUnitsTwo = grpDoubleUnitsTwo.add("statictext", undefined, undefined, {name: "txtDoubleUnitsTwo"}); 
     //     txtDoubleUnitsTwo.text = "Unit"; 
 
-    var ddDoubleUnitsTwo_array = ["m", "cm","mm","inch","pt","pc","px"];  
+    var ddDoubleUnitsTwo_array = ["m", "cm","mm","inch","foot","pt","pc","px"];  
     var ddDoubleUnitsTwo = grpDoubleUnitsTwo.add("dropdownlist", undefined, undefined, {name: "ddDoubleUnitsTwo", items: ddDoubleUnitsTwo_array}); 
         ddDoubleUnitsTwo.selection = exportInfo.unitDoubleTwoIndex; 
 
@@ -709,19 +763,26 @@ function settingDialog(exportInfo) {
         if (cbRealArea.value) {
             // ddRealAreaScale.show();
             ddRealAreaScale.enabled = true;
+            ddRealAreaUnit.enabled = true;
         } else {
             // ddRealAreaScale.hide();
             ddRealAreaScale.enabled = false;
+            ddRealAreaUnit.enabled = false;
         }
+        checkCustomRealScale()
     }
     checkUseRealWorld()
     // Use RealArea checkbox
-    cbRealArea.onClick = function() {
+    cbRealArea.onClick =  function() {
+        checkUseRealWorld()
+    }
+    cbRealArea.onRelease =  function() {
         checkUseRealWorld()
     }
 
     function checkCustomRealScale(){
-        if (ddRealAreaScale.selection.text == "Custom") {
+        // alert(cbRealArea.value)
+        if (ddRealAreaScale.selection.text == "Custom" && cbRealArea.value != false) {
             // ddRealAreaScale.show();
             // ddRealAreaScale.enabled = true;
             realAreaCustomScale.enabled = true;
@@ -784,6 +845,8 @@ function settingDialog(exportInfo) {
     } else {
         exportInfo.realAreaValue = ddRealAreaScale.selection.text;
     }
+    exportInfo.realAreaUnitScale = ddRealAreaUnit.selection.index; 
+    exportInfo.realAreaUnit = ddRealAreaUnit.selection.text; 
     exportInfo.decimals = ddDecimals.selection.index; 
     exportInfo.allShapes = cbShapeArea.value;
     exportInfo.countShapes = cbCountShapes.value;
@@ -856,6 +919,8 @@ function saveToJSON(exportInfo){
     useRealArea = exportInfo.useRealArea;
     realAreaScale = exportInfo.realAreaScale;
     realAreaValue = exportInfo.realAreaValue;
+    realAreaUnitScale = exportInfo.realAreaUnitScale;
+    realAreaUnit = exportInfo.realAreaUnit;
     decimals = exportInfo.decimals;
     countShapes = exportInfo.countShapes;
     unitDoubleOne = exportInfo.unitDoubleOne;
@@ -873,6 +938,8 @@ function saveToJSON(exportInfo){
         useRealArea : useRealArea,
         realAreaScale : realAreaScale,
         realAreaValue : realAreaValue,
+        realAreaUnitScale : realAreaUnitScale,
+        realAreaUnit : realAreaUnit,
         decimals : decimals,
         countShapes : countShapes,
         unitDoubleOne : unitDoubleOne,
@@ -1053,7 +1120,8 @@ function checkItem(item){
     return result;
 }
 
-function convertAreaRealArea (exportInfo, areaInMeters) {
+// https://www.inchcalculator.com/scale-calculator/
+function convertAreaRealArea(exportInfo, areaInMeters) {
     scale = exportInfo.realAreaScale;
     realAreaValue = exportInfo.realAreaValue.split(":");
     realAreasq = Number(realAreaValue[1]) * Number(realAreaValue[1]);
@@ -1063,6 +1131,7 @@ function convertArea (area) {
 	var ppi = 72;
 	var result = {};
 	result.inch = area/ppi/ppi;
+	result.foot = result.inch * 0.00694444; // https://www.google.com/search?q=convert+square+inch+to+cm
     // https://www.conversionunites.com/converter-cm-to-mm
 	// https://www.mathsteacher.com.au/year7/ch13_area/02_calc/area.htm
 	// https://www.calculateme.com/length/centimeters/to-millimeters/16
@@ -1084,7 +1153,8 @@ function convertArea (area) {
     //803.521607 = 28.3464567 x 28.3464567
     // 784 = pixel rounded of 1cm x 1cm = 28px x 28px
     if(exportInfo.useRealArea){
-        result.rw = convertAreaRealArea (exportInfo, result.m)
+        // result.rw = convertAreaRealArea(exportInfo, result.m)
+        result.rw = convertAreaRealArea(exportInfo, result[exportInfo.realAreaUnit])
     }
 	return result;
 }
@@ -1190,27 +1260,35 @@ function getShapeArea(exportInfo, dup, obj, pos){
             if(!exportInfo.singleUnit){
                 // display.push(conv[unit[1]].toFixed(decimalPlaces) + unit[1]+"² / " + conv[unit[2]].toFixed(decimalPlaces) + unit[2]+"²");
                 if (exportInfo.useRealArea){
-                    var data = conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"² / "+conv['rw'].toFixed(decimalPlaces) +"m²";
+                    var data = conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"² / "+conv['rw'].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²";
+                    // var data = conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"² / "+conv[exportInfo.realAreaUnit].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²";
+                    // var data = conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"² / "+conv['rw'].toFixed(decimalPlaces) +"m²";
                 } else {
                     var data = conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"²";
                 }
                 if (exportInfo.textLabel) placeTextLabel(data, objects[i], pos)
                 if (exportInfo.useRealArea){
-                    display.push(conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"² / "+conv['rw'].toFixed(decimalPlaces) +"m²");
+                    display.push(conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"² / "+conv['rw'].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²");
+                    // display.push(conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"² / "+conv[exportInfo.realAreaUnit].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²");
+                    // display.push(conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"² / "+conv['rw'].toFixed(decimalPlaces) +"m²");
                 } else {
                     display.push(conv[exportInfo.unitDoubleOne].toFixed(decimalPlaces) + exportInfo.unitDoubleOne+"² / " + conv[exportInfo.unitDoubleTwo].toFixed(decimalPlaces) + exportInfo.unitDoubleTwo+"²");
                 }
             } else {
                 // display.push(conv[unitType].toFixed(decimalPlaces) + unitType+"²");
                 if (exportInfo.useRealArea){
-                    var data = conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"² / "+conv['rw'].toFixed(decimalPlaces) +"m²";
+                    var data = conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"² / "+conv['rw'].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²";
+                    // var data = conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"² / "+conv[exportInfo.realAreaUnit].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²";
+                    // var data = conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"² / "+conv['rw'].toFixed(decimalPlaces) +"m²";
                 } else {
                     var data = conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"²";
                 }
                 if (exportInfo.textLabel) placeTextLabel(data, objects[i], pos)
 
                 if (exportInfo.useRealArea){
-                    display.push(conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"² / "+conv['rw'].toFixed(decimalPlaces) +"m²");
+                    display.push(conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"² / "+conv['rw'].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²");
+                    // display.push(conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"² / "+conv[exportInfo.realAreaUnit].toFixed(decimalPlaces) +exportInfo.realAreaUnit+"²");
+                    // display.push(conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"² / "+conv['rw'].toFixed(decimalPlaces) +"m²");
                 } else {
                     display.push(conv[exportInfo.unitSingle].toFixed(decimalPlaces) + exportInfo.unitSingle+"²");
                 }
