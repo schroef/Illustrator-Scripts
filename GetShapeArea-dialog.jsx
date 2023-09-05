@@ -636,7 +636,12 @@ function settingDialog(exportInfo) {
 
     var spacerOne = grpRealAreaRowTwo.add("statictext", undefined, undefined, {name: "spacerOne"}); 
         spacerOne.text = ""; 
-        spacerOne.preferredSize.width = 75; 
+        spacerOne.preferredSize.width = 35; 
+
+    var realWorldUnits = grpRealAreaRowTwo.add("statictext", undefined, undefined, {name: "realWorldUnits"}); 
+        realWorldUnits.text = "Units"; 
+        // realWorldUnits.preferredSize.width = 25; 
+        realWorldUnits.helpTip = "Set the units for the real area unit squareroot";
 
     var ddRealAreaUnit_array = ["m","cm","mm","inch","foot","pt","pc","px"]; 
     var ddRealAreaUnit = grpRealAreaRowTwo.add("dropdownlist", undefined, undefined, {name: "ddRealAreaUnit", items: ddRealAreaUnit_array}); 
