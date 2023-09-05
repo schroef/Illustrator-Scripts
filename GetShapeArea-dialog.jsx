@@ -24,6 +24,13 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 //
 // Dialog Window and additional measurements Rombout Versluijs
 //
+// v0.1.4
+// 2023-09-05
+//
+// Added
+// - custom scale factor
+// 
+// - Show Real Area per separate item
 // v0.1.3
 // 2023-07-27
 //
@@ -408,7 +415,7 @@ function settingDialog(exportInfo) {
     // GETSHAPEAREA
     // ============
     var dlgGetShapeArea = new Window("dialog"); 
-        dlgGetShapeArea.text = "Get Shape Area v.0.1.3"; 
+        dlgGetShapeArea.text = "Get Shape Area v.0.1.4"; 
         dlgGetShapeArea.orientation = "column"; 
         dlgGetShapeArea.alignChildren = ["center","top"]; 
         dlgGetShapeArea.spacing = 10; 
@@ -569,11 +576,18 @@ function settingDialog(exportInfo) {
         cbRealArea.value = exportInfo.useRealArea; 
         cbRealArea.helpTip = "When working in scale, show the real world area value. Set by chosing using pre-defined scale."; 
 
-    var ddRealAreaScale_array = ["1:2","1:5","1:10","1:12","1:24","1:25","1:50","1:100","1:150","1:200","1:500"]; 
+    var ddRealAreaScale_array = ["Custom","1:2","1:5","1:10","1:12","1:24","1:25","1:50","1:100","1:150","1:200","1:500"]; 
     var ddRealAreaScale = grpRealArea.add("dropdownlist", undefined, undefined, {name: "ddRealAreaScale", items: ddRealAreaScale_array}); 
         ddRealAreaScale.items[exportInfo.realAreaScale].selected = true; 
         ddRealAreaScale.enabled = exportInfo.useRealArea; 
         // ddDecimals.items[exportInfo.decimals].selected = true; 
+
+    var realAreaCustomScale = grpRealArea.add("edittext", undefined, undefined, {name: "ddRealAreaScale"}); 
+        realAreaCustomScale.enabled = false;
+        realAreaCustomScale.preferredSize.width = 50; 
+        realAreaCustomScale.helpTip = "Input values devided by :. For example; 1:100"; 
+        // realAreaCustomScale.enabled = exportInfo.useRealArea; 
+
 
     var cbShapeArea = grpDoubleUnit.add("checkbox", undefined, undefined, {name: "cbShapeArea"}); 
         cbShapeArea.text = "Show area each shape"; 
@@ -691,7 +705,7 @@ function settingDialog(exportInfo) {
     }
 
 
-    function checkUseRealWorkd(){
+    function checkUseRealWorld(){
         if (cbRealArea.value) {
             // ddRealAreaScale.show();
             ddRealAreaScale.enabled = true;
@@ -700,11 +714,32 @@ function settingDialog(exportInfo) {
             ddRealAreaScale.enabled = false;
         }
     }
-    checkUseRealWorkd()
+    checkUseRealWorld()
     // Use RealArea checkbox
     cbRealArea.onClick = function() {
-        checkUseRealWorkd()
+        checkUseRealWorld()
     }
+
+    function checkCustomRealScale(){
+        if (ddRealAreaScale.selection.text == "Custom") {
+            // ddRealAreaScale.show();
+            // ddRealAreaScale.enabled = true;
+            realAreaCustomScale.enabled = true;
+            realAreaCustomScale.text = exportInfo.realAreaValue;
+        } else {
+            // ddRealAreaScale.hide();
+            // ddRealAreaScale.enabled = false;
+            realAreaCustomScale.enabled = false;
+        }
+    }
+    checkCustomRealScale()
+    // Use RealArea checkbox
+    ddRealAreaScale.onChange = function() {
+        // alert(ddRealAreaScale.selection.text)
+        checkCustomRealScale()
+    }
+
+
     // in case we double clicked the file
     // app.bringToFront();
     dlgGetShapeArea.center();
@@ -743,8 +778,12 @@ function settingDialog(exportInfo) {
         if (pickedColor) exportInfo.textLabelColor = pickedColor.red+"-"+pickedColor.green+"-"+pickedColor.blue;
     }
     exportInfo.useRealArea = cbRealArea.value; 
-    exportInfo.realAreaScale = ddRealAreaScale.selection.index; 
-    exportInfo.realAreaValue = ddRealAreaScale.selection.text; 
+    exportInfo.realAreaScale = ddRealAreaScale.selection.index;
+    if (exportInfo.realAreaValue == "Custom" || ddRealAreaScale.selection.text == "Custom") {
+        exportInfo.realAreaValue = realAreaCustomScale.text;
+    } else {
+        exportInfo.realAreaValue = ddRealAreaScale.selection.text;
+    }
     exportInfo.decimals = ddDecimals.selection.index; 
     exportInfo.allShapes = cbShapeArea.value;
     exportInfo.countShapes = cbCountShapes.value;
