@@ -1,4 +1,3 @@
-#include "color.jsx";
 /////////////////////////////////////////////////////////////////
 // Render Swatch Legend v1.4.8 -- CC
 //>=--------------------------------------
@@ -15,13 +14,28 @@
 //   update: v1.4.4 Added Split by Color Component Rombout Versluijs
 //   update: v1.4.5 Added Color Space selection dialog + saves settings
 //   update: v1.4.6 Added option to use on selection
-//   update: v1.4.7 Added to strip separator for HEX | 2023-03-01
-//   update: v1.4.8 Fixed error when nothing selected | 2023-03-02
-//   update: v1.4.9 Fixed missing leading 0 for HEX code | 2023-06-03
+//   update: v1.4.7 Added to strip separator for HEX
 
-// TODO
-// Grayscale isnt include aswell as gradients
+
+// Changelog
+// keepachangelog > https://keepachangelog.com/en/1.0.0/
+
+// [1.4.9] 2023-09-08
+// Fixed
+// - Error dialog for no swatches selected
+//
+// [1.4.8] 2023-06-03
+// Fixed
+// - Fix for missing leading 0 HEX, fix
+// Changed
+// - Settings are saved alongside the script as side fiel vs the working document
+//
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+// WIP
 //   Add option to use selection as well.
+/////////////////////////////////////////////////////////////////
 
 // LAB values by Carlos Canto - 09/16/2020
 // reference: https://community.adobe.com/t5/illustrator/illustrator-javascript-render-swatch-legend-lab-colour-values-incorrect/m-p/11438710?page=2#M244722
@@ -36,6 +50,7 @@
 // ok and cancel button
 var okBtnID = 1;
 var cancelBtnID = 2;
+
 function showDialog(swatchInfo){
     
     // SCRIPTUI JOONAS ///////////////////////////////////
@@ -48,7 +63,7 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 // SWATCHLEGENDDLG
 // ====================
 var SwatchLegendDlg = new Window("dialog"); 
-    SwatchLegendDlg.text = "Swatch Legend v1.4.9"; 
+    SwatchLegendDlg.text = "Swatch Legend v1.4.8"; 
     SwatchLegendDlg.orientation = "column"; 
     SwatchLegendDlg.alignChildren = ["left","top"]; 
     SwatchLegendDlg.spacing = 10; 
@@ -283,46 +298,19 @@ newGroup.name = "NewGroup";
 newGroup.move(doc, ElementPlacement.PLACEATBEGINNING);
 
 function main(swatchInfo){
-    // swatchInfo = swatchInfo;
-    // for (var c = 0, len = swatches.length; c < len; c++) {
-    //     var swatchGroup = doc.groupItems.add();
-    //     swatchGroup.name = swatches[c].name;
-    //     x = (w + h_pad) * ((c) % cols);
-    //     y = (h + v_pad) * (Math.round(((c+2) + .03) / cols)) * -1;
-    //     rectRef = doc.pathItems.rectangle(y, x, w, h);
-    //     swatchColor = swatches[c].color;
-    //     rectRef.fillColor = swatchColor;
-    //     textRectRef = doc.pathItems.rectangle(y - t_v_pad, x + t_h_pad, w - (2 * t_h_pad), h - (2 * t_v_pad));
-    //     textRef = doc.textFrames.areaText(textRectRef);
-    //     textRef.contents = swatches[c].name + "\r" + getColorValues(swatchColor);
-    //     textRef.textRange.fillColor = is_dark(swatchColor) ? white : black;
-    //     textRef.textRange.size = swatchInfo.textSize;
-    //     rectRef.move(swatchGroup, ElementPlacement.PLACEATBEGINNING);
-    //     textRef.move(swatchGroup, ElementPlacement.PLACEATBEGINNING);
-    //     swatchGroup.move(newGroup, ElementPlacement.PLACEATEND);
-    // }
-
-    // moved inside Main function, otherwise cancel returned error
-    // doc.selection = null;
-    // var _pageItems = doc.pageItems;
-    // _pageItems[i].selected = true;
-    var item = "";
-    for (var i = 0; i < doc.selection.length; i++) {
-        var item = app.activeDocument.selection[i];
+    swatchInfo = swatchInfo;
+    for (var c = 0, len = swatches.length; c < len; c++) {
         var swatchGroup = doc.groupItems.add();
-            swatchGroup.name = i;
-        x = (w + h_pad) * ((i) % cols);
-        y = (h + v_pad) * (Math.round(((i+2) + .03) / cols)) * -1;
+        swatchGroup.name = swatches[c].name;
+        x = (w + h_pad) * ((c) % cols);
+        y = (h + v_pad) * (Math.round(((c+2) + .03) / cols)) * -1;
         rectRef = doc.pathItems.rectangle(y, x, w, h);
-        // swatchColor = swatches[c].color;
-        // rectRef.fillColor = swatchColor;
+        swatchColor = swatches[c].color;
+        rectRef.fillColor = swatchColor;
         textRectRef = doc.pathItems.rectangle(y - t_v_pad, x + t_h_pad, w - (2 * t_h_pad), h - (2 * t_v_pad));
         textRef = doc.textFrames.areaText(textRectRef);
-        textRef.contents = "Name"+ i +"\r"+getBasicColorsFromItem(item, i)[0]; //swatches[c].name + "\r" + getBasicColorsFromItem(item, i); //getColorValues(swatchColor);
-        // swatchColor = swatches[c].color;
-        // alert(getBasicColorsFromItem(item, i)[1].name)
-        rectRef.fillColor = getBasicColorsFromItem(item, i)[1];
-        // textRef.textRange.fillColor = is_dark(swatchColor) ? white : black;
+        textRef.contents = swatches[c].name + "\r" + getColorValues(swatchColor);
+        textRef.textRange.fillColor = is_dark(swatchColor) ? white : black;
         textRef.textRange.size = swatchInfo.textSize;
         rectRef.move(swatchGroup, ElementPlacement.PLACEATBEGINNING);
         textRef.move(swatchGroup, ElementPlacement.PLACEATBEGINNING);
@@ -362,15 +350,17 @@ function getColorValues(c, spot) {
             // only output selected spaces from dialog
             if (swatchInfo.colorSpaces[i]==true){
                 if (printColors[i] == 'LAB' && spot && spot.spotKind == 'SpotColorKind.SPOTLAB') {
-                    outputColors[i] = spot.getInternalColor();
+                    outputColors[i] = d2h(spot.getInternalColor());
+                    // alert(outputColors[i])
                 } else if(printColors[i] == 'HEX') {
                     if (app.activeDocument.documentColorSpace == DocumentColorSpace.CMYK) {
                         colorArray = [c.cyan, c.magenta, c.yellow, c.black];
                         // [Math.round(c), Math.round(m), Math.round(y), Math.round(k)]
                         rgbConv = app.convertSampleColor(ImageColorSpace["CMYK"], colorArray, ImageColorSpace["RGB"], ColorConvertPurpose.defaultpurpose);          
-                        outputColors[i] = [rgbConv[0].toString(16), rgbConv[1].toString(16), rgbConv[2].toString(16)];
+                        // outputColors[i] = [rgbConv[0].toString(16), rgbConv[1].toString(16), rgbConv[2].toString(16)];
+                        outputColors[i] = [d2h(rgbConv[0]), d2h(rgbConv[1]), d2h(rgbConv[2])];
                     } else{
-                        outputColors[i] = [c.red.toString(16), c.green.toString(16), c.blue.toString(16)];
+                        outputColors[i] = [d2h(c.red), d2h(c.green), d2h(c.blue)];
 
                     }
                 }
@@ -382,11 +372,17 @@ function getColorValues(c, spot) {
                     if(isNaN(outputColors[i][j])){
                         outputColors[i][j] = colorComp + outputColors[i][j];
                     } else {
-                        outputColors[i][j] = colorComp + Math.round(outputColors[i][j]);
+                        // skip for HEX
+                        if(printColors[i] != 'HEX')  {
+                            outputColors[i][j] = colorComp + Math.round(outputColors[i][j]);
+                        } else {
+                            outputColors[i][j] = colorComp + outputColors[i][j];
+                        }
                     }
                     if (j == outputColors[i].length - 1) {
                         outputColors[i][j] += "\r";
                     };
+                    // alert(outputColors[i])
                 };
                 // outputColors[i] = outputColors[i].join(" "+swatchInfo.colorSeparator);
                 if(printColors[i] == "HEX" && swatchInfo.joinHex){
@@ -400,7 +396,6 @@ function getColorValues(c, spot) {
                 if(!swatchInfo.splitColorComponents) outputColors[i] = printColors[i]+" "+outputColors[i]
             }
         };
-        // alert(outputColors.join(""))
         return outputColors.join("");
     }
     return "Non Standard Color Type";
@@ -502,17 +497,13 @@ function getSwatchInfo() {
         // if (DialogModes.NO != app.playbackDisplayDialogs) {
         // }
         return "cancel"; // quit, returning "cancel" (dont localize) makes the actions palette not record our script
-    // } else if (swatches.length==0){
-    //     alert("No swatches selected");
-    //     return "cancel"; // quit, 
-    }
-    if (swatches == 0){
-        alert("Please selected swatches in the swatch panel");
+    } else if (swatches.length==0){
+        alert("No swatches selected");
         return "cancel"; // quit, 
-    }
+    } 
     try {
         if (swatches[0].name=="[None]" || swatches[1].name=="[Registration]"){
-            alert("This swatch can be used");
+            alert("This swatch can not be used");
             return "cancel"; // quit, 
         }
     } catch(e){
@@ -572,7 +563,15 @@ function saveToJSON(swatchInfo){
 
 function loadJSON(){
     // var jsonString = JSON.stringify(swatchLegenda);
+    // Document path
     var pathFile = File($.fileName).path;
+
+    // Scriptpath
+    // var pathFile = new File($.fileName);
+    // var textFile = new File(script.path);
+    // alert(File($.fileName));
+    // alert(File($.fileName).fsName);
+    // alert(File($.fileName).path);
     var f = File(pathFile+"/swatchLegend.json");
     if (f.exists){
         f.open('r'); // r for read
@@ -627,106 +626,15 @@ open saved object:
 */
 
 
+//////////////////////////////////////////////////////////////
+//
+// WIP get colors from selection
 
-
-function getPMSColor(colorItem, item){
-	// alert(colorItem.fillColor.typename)
-	colorItem = colorItem.fillColor;
-    tint = false;
-	if (colorItem.typename == "CMYKColor"){
-		// fil = colorItem.fillColor;
-		fil = colorItem;
-		inpt = fil.cyan+", "+fil.magenta+", "+fil.yellow+", "+fil.black;
-        // alert("getPMSColor "+fil.cyan+", "+fil.magenta+", "+fil.yellow+", "+fil.black)
-	} else if (colorItem.typename == "RGBColor"){
-		// fil = colorItem.fillColor;
-		fil = colorItem;
-		inpt = fil.red+", "+fil.green+", "+fil.blue;
-        // alert("getPMSColor "+fil.red+", "+fil.green+", "+fil.blue)
-        
-        // 2022-12-29
-        // use CMYK for RGB better outcome
-        // var col = new RGBColor;
-        //     col.r = fil.red;
-        //     col.g = fil.green;
-        //     col.b = fil.blue;
-        // inpt = RGB2CMYK(col).C+", "+RGB2CMYK(col).M+", "+RGB2CMYK(col).Y+", "+RGB2CMYK(col).K;    
-	} else if(colorItem.typename == "SpotColor"){
-		// alert(miColor.spot.name);
-		// alert(miColor.spot.color);
-		fil = colorItem.spot.color;
-        tint = colorItem.tint;
-		if (app.activeDocument.documentColorSpace == DocumentColorSpace.CMYK){
-			fil = colorItem.spot.color;
-			inpt = fil.cyan+", "+fil.magenta+", "+fil.yellow+", "+fil.black;
-            // alert("getPMSColor "+fil.cyan+", "+fil.magenta+", "+fil.yellow+", "+fil.black)
-		} else{
-			fil = colorItem.spot.color;
-			// fil = colorItem.fillColor;
-			inpt = fil.red+", "+fil.green+", "+fil.blue;
-            // alert("getPMSColor "+fil.red+", "+fil.green+", "+fil.blue)
-            
-            // 2022-12-29
-            // use CMYK for RGB better outcome
-            // var col = new RGBColor;
-            //     col.r = fil.red;
-            //     col.g = fil.green;
-            //     col.b = fil.blue;
-            // // alert("RGB2CMYK "+RGB2CMYK(col))
-            // inpt = RGB2CMYK(col).C+", "+RGB2CMYK(col).M+", "+RGB2CMYK(col).Y+", "+RGB2CMYK(col).K;
-		}
-	}
-    // return inpt
-    var outputColors = new Array();
-    for (var i = printColors.length - 1; i >= 0; i--) {
-        colorType = printColors[i] == "HEX" ? "Indexed": printColors[i];
-        targetSpace = ImageColorSpace[colorType];
-        // alert(i)
-        // alert(swatchInfo.colorSpaces[i])
-        // only output selected spaces from dialog
-        if (swatchInfo.colorSpaces[i]==true){
-            if (printColors[i] == 'LAB' && spot && spot.spotKind == 'SpotColorKind.SPOTLAB') {
-                outputColors[i] = spot.getInternalColor();
-            } else if(printColors[i] == 'HEX') {
-                if (app.activeDocument.documentColorSpace == DocumentColorSpace.CMYK) {
-                    colorArray = [c.cyan, c.magenta, c.yellow, c.black];
-                    // [Math.round(c), Math.round(m), Math.round(y), Math.round(k)]
-                    rgbConv = app.convertSampleColor(ImageColorSpace["CMYK"], colorArray, ImageColorSpace["RGB"], ColorConvertPurpose.defaultpurpose);          
-                    outputColors[i] = [d2h(rgbConv[0].toString(16)), d2h(rgbConv[1].toString(16)), d2h(rgbConv[2].toString(16))];
-                } else{
-                    outputColors[i] = [c.red.toString(16), c.green.toString(16), c.blue.toString(16)];
-
-                }
-            }
-            else {
-                outputColors[i] = app.convertSampleColor(sourceSpace, colorComponents, targetSpace, ColorConvertPurpose.previewpurpose);
-            }
-            for (var j = outputColors[i].length - 1; j >= 0; j--) {
-                colorComp = swatchInfo.splitColorComponents == true ? printColors[i].charAt(j) + ": " : "";
-                if(isNaN(outputColors[i][j])){
-                    outputColors[i][j] = colorComp + outputColors[i][j];
-                } else {
-                    outputColors[i][j] = colorComp + Math.round(outputColors[i][j]);
-                }
-                if (j == outputColors[i].length - 1) {
-                    outputColors[i][j] += "\r";
-                };
-            };
-            // outputColors[i] = outputColors[i].join(" "+swatchInfo.colorSeparator);
-            if(printColors[i] == "HEX" && swatchInfo.joinHex){
-                separator = outputColors[i].join("");
-                // alert(HEX)
-            } else {
-                // separator = outputColors[i].join(" "+swatchInfo.colorSeparator);
-                separator = outputColors[i].join(swatchInfo.colorSeparator);
-            }
-            outputColors[i] = separator;
-            if(!swatchInfo.splitColorComponents) outputColors[i] = printColors[i]+" "+outputColors[i]
-        }
-    };
-    return outputColors.join("");
-}
-
+// var item = "";
+// for (var i = 0; i < doc.selection.length; i++) {
+//     var item = app.activeDocument.selection[i];
+// 	getBasicColorsFromItem(item);
+// }
 
 /**
 * Source: https://community.adobe.com/t5/illustrator-discussions/get-spot-colors-from-selected-object-group-objects/m-p/13356189#M344245
@@ -737,7 +645,7 @@ function getPMSColor(colorItem, item){
 * @param {PageItem} item - an Illustrator page item.
 * @returns {Object} -  {fillColors: Array<Color>, strokeColors: Array<Color>}
 */
-function getBasicColorsFromItem(item, i) {
+function getBasicColorsFromItem(item) {
     if (item == undefined)
         throw Error('getItemColor: No item supplied.');
     var noColor = "[NoColor]",
@@ -749,45 +657,11 @@ function getBasicColorsFromItem(item, i) {
     // collect all the colorables
     if (item.constructor.name == 'PathItem') {
         colorables.push(item);
-		// alert(getPMSColor(item, item));
-        // alert(item.pathItems[0].fillColor.spot.name)
-        // doc.selection = null;
-        // alert(doc.swatches.getSelected())
-        // var _pageItems = doc.pageItems;
-        // _pageItems[i].selected = true;
-        // // alert(_pageItems[i].name)
-        // if (_pageItems[i].name != ""){
-        //     var swtch = doc.swatches.getSelected()
-        //     if (swtch != "") alert(swtch.name)
-            // swa = doc.swatches.getByName(swtch)
-            // alert(swa.color)
-            // swatches[c].color;
-
-        // }''
-        // doc.swatches.getSelected()
-        // var selectedSwatches = doc.swatches.getSelected()
-        // doc.selection = null;
-        // if (selectedSwatches) alert(selectedSwatches)//alert(selectedSwatches[0].name)
-        // alert(getColorValues(item.fillColor, item.fillColor))
-        // alert(typeof(item.fillColor))
-        alert(COLOR.isModeSupported(item.fillColor.typename[1]))
-        alert(item.fillColor.color[0].mode)
-        alert(COLOR.getBestColorRepresentation(item.fillColor))
-        if(item.fillColor != undefined) return [getColorValues(item.fillColor, item.fillColor), item.fillColor]
-        // alert(item.hasOwnProperty('fillColor'))
-        // alert(item.fillColor.spot.color.cyan)
+		getPMSColor(item, item);
     } else if (item.constructor.name == 'CompoundPathItem' && item.pathItems) {
         colorables.push(item.pathItems[0]);
 		// alert("CompoundPathItem")
-        // alert(item.pathItems[0].fillColor)
-		// alert(getPMSColor(item.pathItems[0], item.pathItems[0]));
-        // var selectedSwatches = doc.swatches.getSelected()
-        // doc.selection = null;
-        // if (selectedSwatches) alert(selectedSwatches)//alert(selectedSwatches[0].name)
-        // alert(item.pathItems[0].hasOwnProperty('fillColor'))
-        // alert(item.pathItems[0].hasOwnProperty('fillColor'))
-        // alert(item.pathItems[0].fillColor.cyan+" "+item.pathItems[0].fillColor.magenta+" "+item.pathItems[0].fillColor.yellow+" "+item.pathItems[0].fillColor.black)
-		if(item.pathItems[0].fillColor != undefined) return [getColorValues(item.pathItems[0].fillColor, item.pathItems[0].fillColor), item.pathItems[0].fillColor]
+		getPMSColor(item.pathItems[0], item.pathItems[0]);
     } else if (item.constructor.name == 'TextFrame' && item.textRanges) {
         for (var i = item.textRanges.length - 1; i >= 0; i--)
             colorables.push({
@@ -821,12 +695,12 @@ function getBasicColorsFromItem(item, i) {
     else if (item.constructor.name == 'GroupItem') {
         // add colors from grouped items
         for (var i = 0; i < item.pageItems.length; i++) {
-            // alert(item.pageItems[i])
-			getBasicColorsFromItem(item.pageItems[i], i);
+			getBasicColorsFromItem(item.pageItems[i]);
         }
     }
 };
 
+//////////////////////////////////////////////////////////////
 
 function renderLegends(swatchInfo){
     swatchInfo = swatchInfo;
@@ -849,6 +723,7 @@ function renderLegends(swatchInfo){
     }
 }
 
+// Fixes for missing leading HEX zero
 // https://stackoverflow.com/questions/17204335/convert-decimal-to-hex-missing-padded-0
 function d2h(d) {
     var s = (+d).toString(16);
