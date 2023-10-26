@@ -24,6 +24,12 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 //
 // Dialog Window and additional measurements Rombout Versluijs
 //
+// v0.1.6
+// 2023-10-28
+//
+// Fixed
+// - issue adding label on hidden layer
+
 // v0.1.5
 // 2023-09-05
 //
@@ -449,7 +455,7 @@ function settingDialog(exportInfo) {
     // GETSHAPEAREA
     // ============
     var dlgGetShapeArea = new Window("dialog"); 
-        dlgGetShapeArea.text = "Get Shape Area v0.1.5"; 
+        dlgGetShapeArea.text = "Get Shape Area v0.1.6"; 
         dlgGetShapeArea.orientation = "column"; 
         dlgGetShapeArea.alignChildren = ["center","top"]; 
         dlgGetShapeArea.spacing = 10; 
@@ -1341,12 +1347,31 @@ txtColor.red = 70;
 txtColor.green = 113;
 txtColor.blue = 178;
 
-function placeTextLabel(data, obj, pos){
-    // obj.selected = true;
+function returnVisibleLayer(totLayers){
     var docRef = app.activeDocument;
+    var aLayer = docRef.activeLayer;
+    try {
+        if (app.activeDocument.layers[totLayers].visible){
+            return; 
+        } 
+
+    } catch(e){
+        var newIndex = totLayers-1;
+        docRef.activeLayer = docRef.layers[newIndex];
+        returnVisibleLayer(newIndex)
+    }
+}
+
+
+function placeTextLabel(data, obj, pos){
+    var docRef = app.activeDocument;
+    // obj.selected = true;
+    // alert(docRef.activeLayer.visible)
+
+    returnVisibleLayer(docRef.layers.length);
     var pathRef = obj;
     	//Create a textFrame and set its contents to areaMessage.
-	var areaLabel = docRef.textFrames.add();
+	var areaLabel = app.activeDocument.activeLayer.textFrames.add();
 	areaLabel.contents = data; //.join("\n");
 	for(i=0;i<areaLabel.paragraphs.length;i++){
 		areaLabel.paragraphs[i].justification=Justification.LEFT;
