@@ -12,6 +12,8 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
     Path direction can tell oif shape if plus or pminus
 
     - Fix issue when settings are stored for CMYK and then next document is RGB
+
+    - Show Total shapes rename count shapes
 */
 ////////////////////////////////////////////////////////////
 
@@ -659,7 +661,7 @@ function settingDialog(exportInfo) {
         cbShapeArea.value = exportInfo.allShapes; 
 
     var cbCountShapes = grpDoubleUnit.add("checkbox", undefined, undefined, {name: "cbCountShapes"}); 
-        cbCountShapes.text = "Show total shapes"; 
+        cbCountShapes.text = "Count total shapes"; 
         cbCountShapes.value = exportInfo.countShapes; 
 
     var cbDoubleUnits = grpDoubleUnit.add("checkbox", undefined, undefined, {name: "cbDoubleUnits"}); 
