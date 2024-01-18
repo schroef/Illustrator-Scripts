@@ -1,35 +1,50 @@
 /////////////////////////////////////////////////////////////////
-// Render Swatch Legend v1.4.8 -- CC
+// Render Swatch Legend v1.5.0 -- CC
 //>=--------------------------------------
 //
 //  This script will generate a legend of rectangles for every swatch in the main swatches palette.
 //  You can configure spacing and value display by configuring the variables at the top
 //  of the script.
-//   update: v1.1 now tests color brightness and renders a white label if the color is dark.
-//   update: v1.2 uses adobe colour converter, rather than rgb colour conversion for a closer match.
-//   update: v1.3 adds multiple colour space values based on array printColors.
-//   update: v1.4.1 Updated by CarlCanto > https://community.adobe.com/t5/illustrator-discussions/illustrator-javascript-render-swatch-legend-lab-colour-values-incorrect/m-p/11437592
-//   update: v1.4.2 Only on selected Rombout Versluijs
-//   update: v1.4.3 Added HEX colors Rombout Versluijs
-//   update: v1.4.4 Added Split by Color Component Rombout Versluijs
-//   update: v1.4.5 Added Color Space selection dialog + saves settings
-//   update: v1.4.6 Added option to use on selection
-//   update: v1.4.7 Added to strip separator for HEX
 
 
 // Changelog
 // keepachangelog > https://keepachangelog.com/en/1.0.0/
 
+// [1.5.0] 2024-01-18
+// Fixed
+// - Issue when colors where spot colors and hex code, caused an error
+// Added
+// - Pass for gradients, this is not support as of now. It needs quite an overhaul and much code get this working
+//  > for now it adds the color and text. user can manually add the stops. The idea is to add the colors stops. but this could be a problem with very complicated gradients 
+
 // [1.4.9] 2023-09-08
 // Fixed
 // - Error dialog for no swatches selected
-//
+
 // [1.4.8] 2023-06-03
 // Fixed
 // - Fix for missing leading 0 HEX, fix
 // Changed
 // - Settings are saved alongside the script as side fiel vs the working document
-//
+
+//   update: v1.4.7 Added to strip separator for HEX
+//   update: v1.4.6 Added option to use on selection
+//   update: v1.4.5 Added Color Space selection dialog + saves settings
+//   update: v1.4.4 Added Split by Color Component Rombout Versluijs
+//   update: v1.4.3 Added HEX colors Rombout Versluijs
+//   update: v1.4.2 Only on selected Rombout Versluijs
+//   update: v1.4.1 Updated by CarlCanto > https://community.adobe.com/t5/illustrator-discussions/illustrator-javascript-render-swatch-legend-lab-colour-values-incorrect/m-p/11437592
+//   update: v1.3 adds multiple colour space values based on array printColors.
+//   update: v1.2 uses adobe colour converter, rather than rgb colour conversion for a closer match.
+//   update: v1.1 now tests color brightness and renders a white label if the color is dark.
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/*
+    TODO
+    - Fix issue when LAB colors are checked and colors are actually lab > Done v1.5.0 2024-01-18
+    - Add gradients in selection and swatches
+*/
 /////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////
@@ -63,7 +78,7 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 // SWATCHLEGENDDLG
 // ====================
 var SwatchLegendDlg = new Window("dialog"); 
-    SwatchLegendDlg.text = "Swatch Legend v1.4.8"; 
+    SwatchLegendDlg.text = "Swatch Legend v1.5.0"; 
     SwatchLegendDlg.orientation = "column"; 
     SwatchLegendDlg.alignChildren = ["left","top"]; 
     SwatchLegendDlg.spacing = 10; 
@@ -340,6 +355,9 @@ function getColorValues(c, spot) {
                 sourceSpace = ImageColorSpace.GrayScale;
                 colorComponents = [c.gray];
                 break;
+             case "GradientColor":
+            //  alert("Gradients are not supported asof thos moment")
+                return "Not supported (WIP)\nUse global gradient\nRun script on those color stops"
         }
         var outputColors = new Array();
         for (var i = printColors.length - 1; i >= 0; i--) {
@@ -348,10 +366,10 @@ function getColorValues(c, spot) {
             // alert(i)
             // alert(swatchInfo.colorSpaces[i])
             // only output selected spaces from dialog
+            
             if (swatchInfo.colorSpaces[i]==true){
                 if (printColors[i] == 'LAB' && spot && spot.spotKind == 'SpotColorKind.SPOTLAB') {
-                    outputColors[i] = d2h(spot.getInternalColor());
-                    // alert(outputColors[i])
+                    outputColors[i] = [d2h(spot.getInternalColor()[0]), d2h(spot.getInternalColor()[1]), d2h(spot.getInternalColor()[2])];
                 } else if(printColors[i] == 'HEX') {
                     if (app.activeDocument.documentColorSpace == DocumentColorSpace.CMYK) {
                         colorArray = [c.cyan, c.magenta, c.yellow, c.black];
@@ -361,10 +379,11 @@ function getColorValues(c, spot) {
                         outputColors[i] = [d2h(rgbConv[0]), d2h(rgbConv[1]), d2h(rgbConv[2])];
                     } else{
                         outputColors[i] = [d2h(c.red), d2h(c.green), d2h(c.blue)];
-
                     }
                 }
                 else {
+                    // alert(outputColors[i])
+                    // alert(sourceSpace+" "+colorComponents+" "+targetSpace+" "+ColorConvertPurpose.previewpurpose)
                     outputColors[i] = app.convertSampleColor(sourceSpace, colorComponents, targetSpace, ColorConvertPurpose.previewpurpose);
                 }
                 for (var j = outputColors[i].length - 1; j >= 0; j--) {
@@ -389,6 +408,7 @@ function getColorValues(c, spot) {
                     separator = outputColors[i].join("");
                     // alert(HEX)
                 } else {
+
                     // separator = outputColors[i].join(" "+swatchInfo.colorSeparator);
                     separator = outputColors[i].join(swatchInfo.colorSeparator);
                 }
@@ -491,6 +511,7 @@ function initSwatchInfo(swatchInfo,jsonData) {
 
 var swatchInfo = new Object();
 function getSwatchInfo() {
+
     if (app.documents.length <= 0) {
         alert("No active document");
         // Dialog mdoe doesnt work in Illustrator
