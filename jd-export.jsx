@@ -44,6 +44,10 @@
 // Changelog
 // keepachangelog > https://keepachangelog.com/en/1.0.0/
 
+// [0.0.2] 2024-01-22
+// Added
+// - Gradients color for conversion
+
 // [0.0.1] 2024-01-22
 // Added
 // - SpotColors, LabColorm GrayColor conversion
@@ -356,6 +360,35 @@ try {
         };
     
     
+        /**
+         * getColorNumbers is a method to get color numbers
+         * @param {number} color color
+         * @returns {Object} Object with values for rgb, hex, and cmyk
+         */
+         
+        function getColorNumbers(color) {
+            // alert(color.typename)
+            if (color === undefined) {
+                return undefined;
+            } else if (color.typename === 'CMYKColor') {
+                return [color.cyan, color.magenta, color.yellow, color.black];
+            } else if (color.typename === 'RGBColor') {
+                return [color.red, color.green, color.blue];
+            } else if (color.typename === 'LabColor') {
+                return [color.l, color.a, color.b];
+            } else if (color.typename === 'SpotColor') {
+                return getColorNumbers(color.spot.color);
+                // alert(color.spot.color)
+                return [color.spot.color, color.tint];
+            } else if (color.typename === 'GrayColor') {
+                return [color.gray];
+            // } else if (color.typename === 'Spot') {
+            //     return getColorNumbers(color);
+            } else if (color.typename === 'NoColor') {
+                return undefined;
+            }
+        }
+
         //
         // App Logic
         //
@@ -364,155 +397,216 @@ try {
     
             var destFolder = null;
             destFolder = Folder.selectDialog('Select destination folder for CSV', '~');
-    
+            function checkSwatches(swatches){
+                if (swatches==undefined) {
+                    alert("deselect swatches")
+                    return false
+                }
+                return true
+            }
             if (destFolder != null) {
                 var doc = activeDocument;
                 var swatches = doc.swatches;//.getSelected();//doc.swatches;
-                var colors = new Array();
-                // Document is CMYK
-                if (doc.documentColorSpace == DocumentColorSpace.CMYK) {
-                    for (var i=0; i < swatches.length; i++) {
-                        var noColor = "[NoColor]";
-                        // alert(swatches[i].color.spot.color.cyan)
-                        // alert(swatches[i].color.typename)
-                        // alert(swatches[i].color)
-                        if (swatches[i].color == "[CMYKColor]") {
-                            var c = Math.round(swatches[i].color.cyan);
-                            var m = Math.round(swatches[i].color.magenta);
-                            var y = Math.round(swatches[i].color.yellow);
-                            var k = Math.round(swatches[i].color.black);
-    
-                            var color = fromCMYK(c, m, y, k);
-    
-                            var na = swatches[i].name;
-                            color.name = na;
-    
-                            colors.push(color);
-                        } else if ((swatches[i].color == "[SpotColor]") && (swatches[i].color != noColor)) {
-                            
-                            var c = Math.round(swatches[i].color.spot.color.cyan);
-                            var m = Math.round(swatches[i].color.spot.color.magenta);
-                            var y = Math.round(swatches[i].color.spot.color.yellow);
-                            var k = Math.round(swatches[i].color.spot.color.black);
-    
-                            var color = fromCMYK(c, m, y, k);
-    
-                            var na = swatches[i].name;
-                            color.name = na;
-    
-                            colors.push(color);
-                        } else if ((swatches[i].color == "[LabColor]") && (swatches[i].color != noColor)) {
-                            
-                            var l = Math.round(swatches[i].color.spot.getInternalColor()[0]);
-                            var a = Math.round(swatches[i].color.spot.getInternalColor()[1]);
-                            var b = Math.round(swatches[i].color.spot.getInternalColor()[2]);
-                            
-                            
-                            var color = fromLAB(l, a, b);
-                            // var color = fromCMYK(c, m, y, k);
-    
-                            var na = swatches[i].name;
-                            color.name = na;
-    
-                            colors.push(color);
-                        } else if ((swatches[i].color == "[GrayColor]") && (swatches[i].color != noColor)) {
-                            var color = fromGRAY(swatches[i].color.gray);
-                            // var color = fromCMYK(c, m, y, k);
-    
-                            var na = swatches[i].name;
-                            color.name = na;
-    
-                            colors.push(color);
-                        } else {
-                            // Ignore anything that is not CMYK
+                // alert(swatches[10])
+                if (checkSwatches(swatches)){
+
+                    var colors = new Array();
+                    // Document is CMYK
+                    if (doc.documentColorSpace == DocumentColorSpace.CMYK) {
+                        for (var i=0; i < swatches.length; i++) {
+                            var noColor = "[NoColor]";
+                            // alert(swatches[i].color.spot.color.cyan)
+                            // alert(swatches[i].color.typename)
+                            // alert(swatches[i].color)
+                            if (swatches[i].color == "[CMYKColor]") {
+                                var c = Math.round(swatches[i].color.cyan);
+                                var m = Math.round(swatches[i].color.magenta);
+                                var y = Math.round(swatches[i].color.yellow);
+                                var k = Math.round(swatches[i].color.black);
+        
+                                var color = fromCMYK(c, m, y, k);
+        
+                                var na = swatches[i].name;
+                                color.name = na;
+        
+                                colors.push(color);
+                            } else if ((swatches[i].color == "[SpotColor]") && (swatches[i].color != noColor)) {
+                                
+                                var c = Math.round(swatches[i].color.spot.color.cyan);
+                                var m = Math.round(swatches[i].color.spot.color.magenta);
+                                var y = Math.round(swatches[i].color.spot.color.yellow);
+                                var k = Math.round(swatches[i].color.spot.color.black);
+        
+                                var color = fromCMYK(c, m, y, k);
+        
+                                var na = swatches[i].name;
+                                color.name = na;
+        
+                                colors.push(color);
+                            } else if ((swatches[i].color == "[LabColor]") && (swatches[i].color != noColor)) {
+                                
+                                var l = Math.round(swatches[i].color.spot.getInternalColor()[0]);
+                                var a = Math.round(swatches[i].color.spot.getInternalColor()[1]);
+                                var b = Math.round(swatches[i].color.spot.getInternalColor()[2]);
+                                
+                                
+                                var color = fromLAB(l, a, b);
+                                // var color = fromCMYK(c, m, y, k);
+        
+                                var na = swatches[i].name;
+                                color.name = na;
+        
+                                colors.push(color);
+                            } else if ((swatches[i].color == "[GrayColor]") && (swatches[i].color != noColor)) {
+                                var color = fromGRAY(swatches[i].color.gray);
+                                // var color = fromCMYK(c, m, y, k);
+        
+                                var na = swatches[i].name;
+                                color.name = na;
+        
+                                colors.push(color);
+                            } else if (swatches[i].color == '[GradientColor]') {
+                                var colorStops = new Object();
+
+                                colorStops.name = swatches[i].color.gradient.name;
+                                var gradientStops = swatches[i].color.gradient.gradientStops;
+
+                                colors.push(colorStops);
+                                for (var j = 0; j < gradientStops.length; j++) {
+                                    var col = getColorNumbers(gradientStops[j].color)
+                                    var c = Math.round(col[0]), 
+                                        m = Math.round(col[1]), 
+                                        y = Math.round(col[2]), 
+                                        k = Math.round(col[3]);
+                                    var color = fromCMYK(c,m,y,k);
+                                    // var color = fromCMYK(col[0], col[1], col[2], col[3]);
+                                    // Colorstop by count
+                                    var na = "ColorStop "+j;
+                                    // Color name (Can have issues if color in CMYK doc is RGB)
+                                    // var na = "C="+c+" M="+m+" Y="+y+" K="+k;
+                                
+                                    color.name = na;
+                                    // colorStops = colorStops.concat(color);
+                                    colors.push(color);
+                                }
+                            } else {
+                                // Ignore anything that is not CMYK
+                            }
                         }
                     }
-                }
-                // Document is RGB
-                else if (doc.documentColorSpace == DocumentColorSpace.RGB) {
-                    for (var i = 0; i < swatches.length; i++) {
-                        // alert(swatches[i].typename)
-                        // alert(swatches[i].color.spot.typename)
-                        // alert(swatches[i].color.spot)
-                        if (swatches[i].color == "[RGBColor]") {
-                            var r = Math.round(swatches[i].color.red);
-                            var g = Math.round(swatches[i].color.green);
-                            var b = Math.round(swatches[i].color.blue);
-                            var color = fromRGB(r, g, b);
-    
-                            var na = swatches[i].name;
-                            color.name = na;                        
-    
-                            colors.push(color);
-                        } else if ((swatches[i].color == "[SpotColor]") && (swatches[i].color != noColor)) {
-                            var r = Math.round(swatches[i].color.spot.color.red);
-                            var g = Math.round(swatches[i].color.spot.color.green);
-                            var b = Math.round(swatches[i].color.spot.color.blue);
-    
-                            var color = fromRGB(r, g, b);
-    
-                            var na = swatches[i].name;
-                            color.name = na;
-    
-                            colors.push(color);
-                        } else if ((swatches[i].color == "[LabColor]") && (swatches[i].color != noColor)) {
-                            var l = Math.round(swatches[i].color.spot.getInternalColor()[0]);
-                            var a = Math.round(swatches[i].color.spot.getInternalColor()[1]);
-                            var b = Math.round(swatches[i].color.spot.getInternalColor()[2]);
-                            
-                            var color = fromLAB(l, a, b);
-    
-                            var na = swatches[i].name;
-                            color.name = na;
-    
-                            colors.push(color);
-                        } else if ((swatches[i].color == "[GrayColor]") && (swatches[i].color != noColor)) {
-                            var color = fromGRAY(swatches[i].color.gray);
-    
-                            var na = swatches[i].name;
-                            color.name = na;
-    
-                            colors.push(color);
-                        } else {
-                            // Ignore anything that is not CMYK
+                    // Document is RGB
+                    else if (doc.documentColorSpace == DocumentColorSpace.RGB) {
+                        for (var i = 0; i < swatches.length; i++) {
+                            if (swatches[i].color == "[RGBColor]") {
+                                var r = Math.round(swatches[i].color.red);
+                                var g = Math.round(swatches[i].color.green);
+                                var b = Math.round(swatches[i].color.blue);
+                                var color = fromRGB(r, g, b);
+        
+                                var na = swatches[i].name;
+                                color.name = na;                        
+        
+                                colors.push(color);
+                            } else if ((swatches[i].color == "[SpotColor]") && (swatches[i].color != noColor)) {
+                                var r = Math.round(swatches[i].color.spot.color.red);
+                                var g = Math.round(swatches[i].color.spot.color.green);
+                                var b = Math.round(swatches[i].color.spot.color.blue);
+        
+                                var color = fromRGB(r, g, b);
+        
+                                var na = swatches[i].name;
+                                color.name = na;
+        
+                                colors.push(color);
+                            } else if ((swatches[i].color == "[LabColor]") && (swatches[i].color != noColor)) {
+                                var l = Math.round(swatches[i].color.spot.getInternalColor()[0]);
+                                var a = Math.round(swatches[i].color.spot.getInternalColor()[1]);
+                                var b = Math.round(swatches[i].color.spot.getInternalColor()[2]);
+                                
+                                var color = fromLAB(l, a, b);
+        
+                                var na = swatches[i].name;
+                                color.name = na;
+        
+                                colors.push(color);
+                            } else if ((swatches[i].color == "[GrayColor]") && (swatches[i].color != noColor)) {
+                                var color = fromGRAY(swatches[i].color.gray);
+        
+                                var na = swatches[i].name;
+                                color.name = na;
+        
+                                colors.push(color);
+                            } else if (swatches[i].color == '[GradientColor]') {
+                                var colorStops = new Object();
+
+                                colorStops.name = swatches[i].color.gradient.name;
+                                var gradientStops = swatches[i].color.gradient.gradientStops;
+
+                                colors.push(colorStops);
+                                for (var j = 0; j < gradientStops.length; j++) {
+                                    var col = getColorNumbers(gradientStops[j].color)
+                                    var color = fromRGB(col[0], col[1], col[2]);
+
+                                    // Colorstop by count
+                                    var na = "ColorStop "+j;
+                                    // Color name (Can have issues if color in CMYK doc is RGB)
+                                    // var na = "R="+col[0]+" G="+col[1]+" B="+col[2];
+                                
+                                    color.name = na;
+                                    // colorStops = colorStops.concat(color);
+                                    colors.push(color);
+                                }
+                            } else {
+                                // Ignore anything that is not CMYK
+                            }
                         }
                     }
-                }
-    
-                // Open output file
-                var listName = doc.name + ".csv";
-                var listFile = destFolder + "/" + listName;
-                var theFile = new File(listFile);
-                var isOpen = theFile.open("w");
-    
-                if (isOpen) {
-                    theFile.seek(0, 0);
-    
-                    // Write headers
-                    theFile.writeln("I.D.,name,C,M,Y,K,hex,R,G,B");
+        
+                    // Open output file
+                    var listName = doc.name + ".csv";
+                    var listFile = destFolder + "/" + listName;
+                    var theFile = new File(listFile);
+                    var isOpen = theFile.open("w");
+        
+                    if (isOpen) {
+                        theFile.seek(0, 0);
+        
+                        // Write headers
+                        theFile.writeln("I.D.,name,C,M,Y,K,hex,R,G,B");
+                        
+                        // Print every item in colors.
+                        for (var i = 0; i < colors.length; i++) {
+                            var color = colors[i];
+                            // color.name is handled specifically below to add quotation marks
+                            if(color.c==undefined && color.m==undefined){
+                                var color_items = "Gradient Color";
+                            } else {
+                                var color_items = [
+                                    color.c,
+                                    color.m,
+                                    color.y,
+                                    color.k,
+                                    color.hex,
+                                    color.r,
+                                    color.g,
+                                    color.b
+                                ];
+                                color_items.join(',');
+                            }
+                            // alert(color_items=="" +"-"+color_items)
+                            // }
+                            // alert(color_items==[,,,,,,,])
+                            // alert(color_items)
+                            // items = color_items==[,,,,,,,] ? "" : color_items.join(',');
+                            var line = i + "," + "\"" + color.name + "\"," + color_items;
+                            theFile.writeln(line);
+                        }
+        
+                        theFile.close();
+                    }
                     
-                    // Print every item in colors.
-                    for (var i = 0; i < colors.length; i++) {
-                        var color = colors[i];
-                        // color.name is handled specifically below to add quotation marks
-                        var color_items = [
-                            color.c,
-                            color.m,
-                            color.y,
-                            color.k,
-                            color.hex,
-                            color.r,
-                            color.g,
-                            color.b
-                        ];
-                        var line = i + "," + "\"" + color.name + "\"," + color_items.join(',');
-                        theFile.writeln(line);
-                    }
-    
-                    theFile.close();
+                    alert('Export Complete');
                 }
-                
-                alert('Export Complete');
             }
             else {
                 alert('Export Aborted');
