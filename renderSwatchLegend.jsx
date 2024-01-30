@@ -1,42 +1,47 @@
 /////////////////////////////////////////////////////////////////
-// Render Swatch Legend v1.5.0 -- CC
+// Render Swatch Legend v1.5.1 -- CC
 //>=--------------------------------------
 //
 //  This script will generate a legend of rectangles for every swatch in the main swatches palette.
 //  You can configure spacing and value display by configuring the variables at the top
 //  of the script.
 
+/*
+    Changelog
+    keepachangelog > https://keepachangelog.com/en/1.0.0/
 
-// Changelog
-// keepachangelog > https://keepachangelog.com/en/1.0.0/
-
-// [1.5.0] 2024-01-18
-// Fixed
-// - Issue when colors where spot colors and hex code, caused an error
-// Added
-// - Pass for gradients, this is not support as of now. It needs quite an overhaul and much code get this working
-//  > for now it adds the color and text. user can manually add the stops. The idea is to add the colors stops. but this could be a problem with very complicated gradients 
-
-// [1.4.9] 2023-09-08
-// Fixed
-// - Error dialog for no swatches selected
-
-// [1.4.8] 2023-06-03
-// Fixed
-// - Fix for missing leading 0 HEX, fix
-// Changed
-// - Settings are saved alongside the script as side fiel vs the working document
-
-//   update: v1.4.7 Added to strip separator for HEX
-//   update: v1.4.6 Added option to use on selection
-//   update: v1.4.5 Added Color Space selection dialog + saves settings
-//   update: v1.4.4 Added Split by Color Component Rombout Versluijs
-//   update: v1.4.3 Added HEX colors Rombout Versluijs
-//   update: v1.4.2 Only on selected Rombout Versluijs
-//   update: v1.4.1 Updated by CarlCanto > https://community.adobe.com/t5/illustrator-discussions/illustrator-javascript-render-swatch-legend-lab-colour-values-incorrect/m-p/11437592
-//   update: v1.3 adds multiple colour space values based on array printColors.
-//   update: v1.2 uses adobe colour converter, rather than rgb colour conversion for a closer match.
-//   update: v1.1 now tests color brightness and renders a white label if the color is dark.
+    [1.5.1] 2024-01-30
+    Added
+    - Name as option
+    changed
+    - options panel work, adjsuted grouping so alignment of SctipUI is a bit better
+    
+    [1.5.0] 2024-01-18
+    Fixed
+    - Issue when colors where spot colors and hex code, caused an error. Outcome was not wrapped as an array
+    Added
+    - Pass for gradients, this is not support as of now. It needs quite an overhaul and much code get this working
+     > for now it adds the color and text. user can manually add the stops. The idea is to add the colors stops. but this could be a problem with very complicated gradients 
+    [1.4.9] 2023-09-08
+    Fixed
+    - Error dialog for no swatches selected
+    [1.4.8] 2023-06-03
+    Fixed
+    - Fix for missing leading 0 HEX, fix
+    Changed
+    - Settings are saved alongside the script as side fiel vs the working document
+      
+    update: v1.4.7 Added to strip separator for HEX
+    update: v1.4.6 Added option to use on selection
+    update: v1.4.5 Added Color Space selection dialog + saves settings
+    update: v1.4.4 Added Split by Color Component Rombout Versluijs
+    update: v1.4.3 Added HEX colors Rombout Versluijs
+    update: v1.4.2 Only on selected Rombout Versluijs
+    update: v1.4.1 Updated by CarlCanto > https://community.adobe.com/t5/illustrator-discussions/illustrator-javascript-render-swatch-legend-lab-colour-values-incorrect/m-p/11437592
+    update: v1.3 adds multiple colour space values based on array printColors.
+    update: v1.2 uses adobe colour converter, rather than rgb colour conversion for a closer match.
+     update: v1.1 now tests color brightness and renders a white label if the color is dark.
+*/
 /////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////
@@ -78,7 +83,7 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 // SWATCHLEGENDDLG
 // ====================
 var SwatchLegendDlg = new Window("dialog"); 
-    SwatchLegendDlg.text = "Swatch Legend v1.5.0"; 
+    SwatchLegendDlg.text = "Swatch Legend v1.5.1"; 
     SwatchLegendDlg.orientation = "column"; 
     SwatchLegendDlg.alignChildren = ["left","top"]; 
     SwatchLegendDlg.spacing = 10; 
@@ -88,6 +93,7 @@ var SwatchLegendDlg = new Window("dialog");
 // ==============
 var colorSpacesPnl = SwatchLegendDlg.add("panel", undefined, undefined, {name: "colorSpacesPnl"}); 
     colorSpacesPnl.text = "Select Color Spaces"; 
+    colorSpacesPnl.helpTip = "Select Color Spaces you wont to show the color conmponents for."; 
     colorSpacesPnl.orientation = "column"; 
     colorSpacesPnl.alignChildren = ["left","top"]; 
     colorSpacesPnl.spacing = 5; 
@@ -117,71 +123,111 @@ var grayChkb = colorSpacesPnl.add("checkbox", undefined, undefined, {name: "gray
 // ==========
 var optionsPnl = SwatchLegendDlg.add("panel", undefined, undefined, {name: "optionsPnl"}); 
     optionsPnl.text = "options"; 
-    optionsPnl.orientation = "row"; 
-    optionsPnl.alignChildren = ["left","fill"]; 
+    optionsPnl.orientation = "column"; 
+    optionsPnl.alignChildren = ["left","top"]; 
     optionsPnl.spacing = 5; 
     optionsPnl.margins = [10, 15, 10, 10]; 
+
+// var spacerLbl = splitCompsGrp.add("statictext", undefined, undefined, {name: "spacerLbl"}); 
+//     spacerLbl.text = ""; 
+    // spacerLbl.preferredSize.height = 1;
+
+
+// NAMECOLORGRP
+// =============
+var nameColorGrp = optionsPnl.add("group", undefined, {name: "nameColorGrp"}); 
+    nameColorGrp.orientation = "row"; 
+    nameColorGrp.alignChildren = ["left","center"]; 
+    nameColorGrp.spacing = 5; 
+    nameColorGrp.margins = 0; 
+
+var addNameColorChbk = nameColorGrp.add("checkbox", undefined, undefined, {name: "addNameColorChbk"}); 
+    addNameColorChbk.helpTip = "Adds name of the color"; 
+    addNameColorChbk.preferredSize.height = 13; 
+    addNameColorChbk.preferredSize.width = 30;
+    addNameColorChbk.value = swatchInfo.nameColor; 
+    addNameColorChbk.alignment = ["center","center"];
+
+var nameColorLbl = nameColorGrp.add("statictext", undefined, undefined, {name: "nameColorLbl"}); 
+    nameColorLbl.text = "Add name color"; 
+    nameColorLbl.preferredSize.height = 20;
+
+// SEPARATORGRP
+// =============
+var separatorGrp = optionsPnl.add("group", undefined, {name: "separatorGrp"}); 
+    separatorGrp.orientation = "row"; 
+    separatorGrp.alignChildren = ["left","center"]; 
+    separatorGrp.spacing = 5; 
+    separatorGrp.margins = 0; 
+
+var separatorStr = separatorGrp.add('edittext {properties: {name: "separatorStr"}}'); 
+    separatorStr.helpTip = "Character used to separate the colours eg \u0022|\u0022 output = R: XXX|G: XXX|B: XXX"; 
+    separatorStr.text = swatchInfo.colorSeparator; 
+    separatorStr.preferredSize.height = 20; 
+    separatorStr.preferredSize.width = 30; 
+    separatorStr.alignment = ["center","center"]; 
+
+var separatorLbl = separatorGrp.add("statictext", undefined, undefined, {name: "separatorLbl"}); 
+    separatorLbl.text = "Separator"; 
+    separatorLbl.preferredSize.height = 20; 
+
+
+// JOINHEXGRP
+// =============
+var joinHexGrp = optionsPnl.add("group", undefined, {name: "joinHexGrp"}); 
+    joinHexGrp.orientation = "row"; 
+    joinHexGrp.alignChildren = ["left","center"]; 
+    joinHexGrp.spacing = 5; 
+    joinHexGrp.margins = 0; 
+
+var joinHexChbk = joinHexGrp.add("checkbox", undefined, undefined, {name: "joinHexChbk"}); 
+    joinHexChbk.helpTip = "Joins the HEX values by removing the separator"; 
+    joinHexChbk.preferredSize.height = 13; 
+    joinHexChbk.value = swatchInfo.joinHex; 
+    joinHexChbk.alignment = ["center","center"]; 
+    joinHexChbk.preferredSize.width = 30;
+
+var skipHexLbl = joinHexGrp.add("statictext", undefined, undefined, {name: "skipHexLbl"}); 
+    skipHexLbl.text = "Join HEX"; 
+    skipHexLbl.preferredSize.height = 20; 
+
 
 // SPLITCOMPSGRP
 // =============
 var splitCompsGrp = optionsPnl.add("group", undefined, {name: "splitCompsGrp"}); 
-    splitCompsGrp.preferredSize.height = 70; 
-    splitCompsGrp.orientation = "column"; 
-    splitCompsGrp.alignChildren = ["center","center"]; 
+    splitCompsGrp.orientation = "row"; 
+    splitCompsGrp.alignChildren = ["left","center"]; 
     splitCompsGrp.spacing = 5; 
     splitCompsGrp.margins = 0; 
-    splitCompsGrp.alignment = ["left","center"]; 
-
-var separatorStr = splitCompsGrp.add('edittext {properties: {name: "separatorStr"}}'); 
-    separatorStr.helpTip = "Character used to separate the colours eg \u0022|\u0022 output = R: XXX|G: XXX|B: XXX"; 
-    separatorStr.text = swatchInfo.colorSeparator; 
-    separatorStr.preferredSize.width = 30; 
-    separatorStr.preferredSize.height = 20; 
-    separatorStr.alignment = ["center","center"]; 
-
-
-var joinHexChbk = splitCompsGrp.add("checkbox", undefined, undefined, {name: "joinHexChbk"}); 
-    joinHexChbk.helpTip = "Joins the HEX values by removing the separator"; 
-    joinHexChbk.preferredSize.height = 20; 
-    joinHexChbk.value = swatchInfo.joinHex; 
-    joinHexChbk.alignment = ["center","center"]; 
 
 var splitCompsChbk = splitCompsGrp.add("checkbox", undefined, undefined, {name: "splitCompsChbk"}); 
     splitCompsChbk.helpTip = "Split color component name by value. eg it shows CMYK 0 100 100 0 when off, C: 0 M: 100 Y:100 K:0 when checked"; 
     splitCompsChbk.preferredSize.height = 20; 
     splitCompsChbk.value = swatchInfo.splitColorComponents; 
     splitCompsChbk.alignment = ["center","center"]; 
+    splitCompsChbk.preferredSize.width = 30;
 
-var textSizeStr = splitCompsGrp.add('edittext {properties: {name: "textSizeStr"}}'); 
+var splitCompLbl = splitCompsGrp.add("statictext", undefined, undefined, {name: "splitCompLbl"}); 
+    splitCompLbl.text = "Split Components"; 
+    splitCompLbl.preferredSize.height = 20; 
+
+
+// TEXTSIZESGRP
+// =============
+var textSizeGrp = optionsPnl.add("group", undefined, {name: "textSizeGrp"}); 
+    textSizeGrp.orientation = "row"; 
+    textSizeGrp.alignChildren = ["left","center"]; 
+    textSizeGrp.spacing = 5; 
+    textSizeGrp.margins = 0; 
+
+var textSizeStr = textSizeGrp.add('edittext {properties: {name: "textSizeStr"}}'); 
     textSizeStr.helpTip = "Set text size of value per color"; 
     // textSizeStr.text = "10"; 
     textSizeStr.text = swatchInfo.textSize; 
     textSizeStr.preferredSize.width = 30; 
     textSizeStr.preferredSize.height = 20; 
 
-// SEPARATORGRP
-// ============
-var separatorGrp = optionsPnl.add("group", undefined, {name: "separatorGrp"}); 
-    separatorGrp.preferredSize.height = 70; 
-    separatorGrp.orientation = "column"; 
-    separatorGrp.alignChildren = ["left","center"]; 
-    separatorGrp.spacing = 5; 
-    separatorGrp.margins = 0; 
-    separatorGrp.alignment = ["left","center"]; 
-
-var separatorLbl = separatorGrp.add("statictext", undefined, undefined, {name: "separatorLbl"}); 
-    separatorLbl.text = "Separator"; 
-    separatorLbl.preferredSize.height = 15; 
-
-var skipHexLbl = separatorGrp.add("statictext", undefined, undefined, {name: "skipHexLbl"}); 
-    skipHexLbl.text = "Join HEX"; 
-    skipHexLbl.preferredSize.height = 20; 
-
-var splitCompLbl = separatorGrp.add("statictext", undefined, undefined, {name: "splitCompLbl"}); 
-    splitCompLbl.text = "Split Components"; 
-    splitCompLbl.preferredSize.height = 20; 
-
-var textSizeLbl = separatorGrp.add("statictext", undefined, undefined, {name: "textSizeLbl"}); 
+var textSizeLbl = textSizeGrp.add("statictext", undefined, undefined, {name: "textSizeLbl"}); 
     textSizeLbl.text = "Text Size"; 
     textSizeLbl.preferredSize.height = 20; 
 
@@ -273,6 +319,7 @@ var okBtn = dialogBtnGroup.add("button", undefined, undefined, {name: "okBtn"});
     swatchInfo.labChkb = labChkb.value;
     swatchInfo.grayChkb = grayChkb.value;
     swatchInfo.colorSpaces = [swatchInfo.hexChkb, swatchInfo.rgbChkb, swatchInfo.cmykChkb, swatchInfo.labChkb, swatchInfo.grayChkb];
+    swatchInfo.nameColor = addNameColorChbk.value;
     swatchInfo.colorSeparator = separatorStr.text;
     swatchInfo.joinHex = joinHexChbk.value;
     swatchInfo.splitColorComponents = splitCompsChbk.value;
@@ -324,7 +371,8 @@ function main(swatchInfo){
         rectRef.fillColor = swatchColor;
         textRectRef = doc.pathItems.rectangle(y - t_v_pad, x + t_h_pad, w - (2 * t_h_pad), h - (2 * t_v_pad));
         textRef = doc.textFrames.areaText(textRectRef);
-        textRef.contents = swatches[c].name + "\r" + getColorValues(swatchColor);
+        var nameColor = swatchInfo.nameColor == true ? swatches[c].name + "\r" : ""; 
+        textRef.contents = nameColor + getColorValues(swatchColor);
         textRef.textRange.fillColor = is_dark(swatchColor) ? white : black;
         textRef.textRange.size = swatchInfo.textSize;
         rectRef.move(swatchGroup, ElementPlacement.PLACEATBEGINNING);
@@ -357,7 +405,7 @@ function getColorValues(c, spot) {
                 break;
              case "GradientColor":
             //  alert("Gradients are not supported asof thos moment")
-                return "Not supported (WIP)\nUse global gradient\nRun script on those color stops"
+                return "Not supported (WIP)\nUse global gradient\nRun script on color stops"
         }
         var outputColors = new Array();
         for (var i = printColors.length - 1; i >= 0; i--) {
@@ -490,6 +538,7 @@ function initSwatchInfo(swatchInfo,jsonData) {
         swatchInfo.labChkb = jsonData.labChkb;
         swatchInfo.grayChkb = jsonData.grayChkb;
         swatchInfo.colorSpaces = jsonData.colorSpaces;
+        swatchInfo.nameColor = jsonData.nameColor;
         swatchInfo.colorSeparator = jsonData.colorSeparator; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
         swatchInfo.joinHex = jsonData.joinHex; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
         swatchInfo.splitColorComponents = jsonData.splitColorComponents;
@@ -501,6 +550,7 @@ function initSwatchInfo(swatchInfo,jsonData) {
         swatchInfo.labChkb = false;
         swatchInfo.grayChkb = false;
         swatchInfo.colorSpaces = [swatchInfo.hexChkb, swatchInfo.rgbChkb, swatchInfo.cmykChkb, swatchInfo.labChkb, swatchInfo.grayChkb];
+        swatchInfo.nameColor = true;
         swatchInfo.colorSeparator = " "; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
         swatchInfo.joinHex = false;
         swatchInfo.splitColorComponents = false;
@@ -555,6 +605,7 @@ function saveToJSON(swatchInfo){
     labChkb =swatchInfo.labChkb;
     grayChkb =swatchInfo.grayChkb;
     colorSpaces =swatchInfo.colorSpaces;
+    nameColor =swatchInfo.nameColor;
     colorSeparator =swatchInfo.colorSeparator;
     joinHex =swatchInfo.joinHex;
     splitColorComponents =swatchInfo.splitColorComponents;
@@ -566,6 +617,7 @@ function saveToJSON(swatchInfo){
         labChkb : labChkb,
         grayChkb : grayChkb,
         colorSpaces : [hexChkb, rgbChkb, cmykChkb, labChkb, grayChkb],
+        nameColor : nameColor,
         colorSeparator : colorSeparator,
         joinHex : joinHex,
         splitColorComponents : splitColorComponents,
