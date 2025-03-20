@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////
-// Render Swatch Legend v1.5.1 -- CC
+// Render Swatch Legend v1.5.3 -- CC
 //>=--------------------------------------
 //
 //  This script will generate a legend of rectangles for every swatch in the main swatches palette.
@@ -10,11 +10,24 @@
     Changelog
     keepachangelog > https://keepachangelog.com/en/1.0.0/
 
+    [1.5.3] 2025-03-20
+    Fixed
+    - Error when active layer is locked or hidden
+    - Join HEX was not working when split was active
+
+    Added
+    - # tag toggle for HEX
+    - HEX is now all capitilized
+
+    [1.5.2] 2024-09-18
+    Fixed
+    - LAB returned wrong colors due to hex adding number function d2h()
+
     [1.5.1] 2024-01-30
     Added
     - Name as option
     changed
-    - options panel work, adjsuted grouping so alignment of SctipUI is a bit better
+    - options panel work, adjusted grouping so alignment of SctipUI is a bit better
     
     [1.5.0] 2024-01-18
     Fixed
@@ -83,7 +96,7 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 // SWATCHLEGENDDLG
 // ====================
 var SwatchLegendDlg = new Window("dialog"); 
-    SwatchLegendDlg.text = "Swatch Legend v1.5.1"; 
+    SwatchLegendDlg.text = "Swatch Legend v1.5.3"; 
     SwatchLegendDlg.orientation = "column"; 
     SwatchLegendDlg.alignChildren = ["left","top"]; 
     SwatchLegendDlg.spacing = 10; 
@@ -185,11 +198,22 @@ var joinHexChbk = joinHexGrp.add("checkbox", undefined, undefined, {name: "joinH
     joinHexChbk.preferredSize.height = 13; 
     joinHexChbk.value = swatchInfo.joinHex; 
     joinHexChbk.alignment = ["center","center"]; 
-    joinHexChbk.preferredSize.width = 30;
+    joinHexChbk.preferredSize.width = 25;
 
 var skipHexLbl = joinHexGrp.add("statictext", undefined, undefined, {name: "skipHexLbl"}); 
     skipHexLbl.text = "Join HEX"; 
     skipHexLbl.preferredSize.height = 20; 
+
+var addHashChbk = joinHexGrp.add("checkbox", undefined, undefined, {name: "addHashChbk"}); 
+    addHashChbk.helpTip = "add hash for color value"; 
+    addHashChbk.preferredSize.height = 13; 
+    addHashChbk.value = swatchInfo.addHash; 
+    addHashChbk.alignment = ["center","center"]; 
+    // addHashChbk.preferredSize.width = 25;
+
+var addHashLbl = joinHexGrp.add("statictext", undefined, undefined, {name: "addHashLbl"}); 
+    addHashLbl.text = "Add #"; 
+    addHashLbl.preferredSize.height = 20; 
 
 
 // SPLITCOMPSGRP
@@ -293,6 +317,40 @@ var okBtn = dialogBtnGroup.add("button", undefined, undefined, {name: "okBtn"});
 
     // END SCRIPTUI JOONAS ///////////////////////////////
     //////////////////////////////////////////////////////
+    var joinHexChbkOld ;
+    var addHashChbkOld;
+    joinHexChbkOld = joinHexChbk.value;
+    addHashChbkOld = addHashChbk.value;    
+    // check if we toggle on / off joinhex add hash
+    function checSplitorJoinHEX(value, joinHexChbkOld, addHashChbkOld) {
+        // alert(value)
+        if(value){
+            joinHexGrp.enabled = false;
+            joinHexChbkOld = joinHexChbk.value;
+            addHashChbkOld = addHashChbk.value;
+            joinHexChbk.value = false;
+            addHashChbk.value = false;
+        } else {
+            joinHexGrp.enabled = true;
+            joinHexChbk.value = joinHexChbkOld;
+            addHashChbk.value = addHashChbkOld;
+            addHashChbkOld = addHashChbkOld;
+            joinHexChbkOld = joinHexChbkOld;
+        }
+    }
+    joinHexChbk.onClick = function() {
+        joinHexChbkOld = joinHexChbk.value;
+        addHashChbkOld = addHashChbk.value;
+    }
+    addHashChbk.onClick  = function() {
+        joinHexChbkOld = joinHexChbk.value;
+        addHashChbkOld = addHashChbk.value;
+    }
+    splitCompsChbk.onClick = function() {
+        checSplitorJoinHEX(this.value, joinHexChbkOld, addHashChbkOld)
+    }
+    checSplitorJoinHEX(splitCompsChbk.value, joinHexChbkOld, addHashChbkOld)
+    
 
     okBtn.onClick = function() {
         SwatchLegendDlg.close(okBtnID);
@@ -308,7 +366,6 @@ var okBtn = dialogBtnGroup.add("button", undefined, undefined, {name: "okBtn"});
     SwatchLegendDlg.center();
 
     var result = SwatchLegendDlg.show();
-
     if (cancelBtnID == result) {
         return result; // close to quit
     }
@@ -322,6 +379,7 @@ var okBtn = dialogBtnGroup.add("button", undefined, undefined, {name: "okBtn"});
     swatchInfo.nameColor = addNameColorChbk.value;
     swatchInfo.colorSeparator = separatorStr.text;
     swatchInfo.joinHex = joinHexChbk.value;
+    swatchInfo.addHash = addHashChbk.value;
     swatchInfo.splitColorComponents = splitCompsChbk.value;
     swatchInfo.textSize = Number(textSizeStr.text);
     return result;
@@ -355,9 +413,23 @@ white = new GrayColor();
 black.gray = 100;
 white.gray = 0;
 activeDocument.layers[0].locked = false;
-var newGroup = doc.groupItems.add();
-newGroup.name = "NewGroup";
-newGroup.move(doc, ElementPlacement.PLACEATBEGINNING);
+// var newGroup;
+
+function addSwatchGroup(doc){
+    // alert(app.activeDocument.activeLayer.locked ==false)
+    try {
+        if (app.activeDocument.activeLayer.visible){
+            if (app.activeDocument.activeLayer.locked ==false){
+                newGroup = doc.groupItems.add();
+                newGroup.name = "NewGroup";
+                newGroup.move(doc, ElementPlacement.PLACEATBEGINNING);
+                return newGroup
+            }
+        }
+    } catch(e) {
+        return false
+    }
+}
 
 function main(swatchInfo){
     swatchInfo = swatchInfo;
@@ -412,12 +484,14 @@ function getColorValues(c, spot) {
             colorType = printColors[i] == "HEX" ? "Indexed": printColors[i];
             targetSpace = ImageColorSpace[colorType];
             // alert(i)
+            // alert(swatchInfo.joinHex)
             // alert(swatchInfo.colorSpaces[i])
             // only output selected spaces from dialog
             
             if (swatchInfo.colorSpaces[i]==true){
                 if (printColors[i] == 'LAB' && spot && spot.spotKind == 'SpotColorKind.SPOTLAB') {
-                    outputColors[i] = [d2h(spot.getInternalColor()[0]), d2h(spot.getInternalColor()[1]), d2h(spot.getInternalColor()[2])];
+                    outputColors[i] = [spot.getInternalColor()[0], spot.getInternalColor()[1], spot.getInternalColor()[2]];
+                    // outputColors[i] = [d2h(spot.getInternalColor()[0]), d2h(spot.getInternalColor()[1]), d2h(spot.getInternalColor()[2])];
                 } else if(printColors[i] == 'HEX') {
                     if (app.activeDocument.documentColorSpace == DocumentColorSpace.CMYK) {
                         colorArray = [c.cyan, c.magenta, c.yellow, c.black];
@@ -435,10 +509,16 @@ function getColorValues(c, spot) {
                     outputColors[i] = app.convertSampleColor(sourceSpace, colorComponents, targetSpace, ColorConvertPurpose.previewpurpose);
                 }
                 for (var j = outputColors[i].length - 1; j >= 0; j--) {
+                    // Skip split for HEX > makes no sense 2025-03-20
                     colorComp = swatchInfo.splitColorComponents == true ? printColors[i].charAt(j) + ": " : "";
+                    // if(printColors[i] == "HEX" && swatchInfo.joinHex){ 
+                    //     colorComp = swatchInfo.splitColorComponents == true ? printColors[i].charAt(j) + "" : "";
+                    // } else {
+                    // }
                     if(isNaN(outputColors[i][j])){
                         outputColors[i][j] = colorComp + outputColors[i][j];
                     } else {
+                        // alert(printColors[i])
                         // skip for HEX
                         if(printColors[i] != 'HEX')  {
                             outputColors[i][j] = colorComp + Math.round(outputColors[i][j]);
@@ -451,16 +531,59 @@ function getColorValues(c, spot) {
                     };
                     // alert(outputColors[i])
                 };
-                // outputColors[i] = outputColors[i].join(" "+swatchInfo.colorSeparator);
-                if(printColors[i] == "HEX" && swatchInfo.joinHex){
-                    separator = outputColors[i].join("");
-                    // alert(HEX)
+                
+                if(printColors[i] == "HEX"){
+                    // Make HEX Uppercase
+                    // outputColors[i] = outputColors[i].toString().toUpperCase();
+                    if (swatchInfo.joinHex && swatchInfo.addHash){
+                        separator = "#"+outputColors[i].join("");
+                    } else {
+                        // separator = outputColors[i].join(" "+swatchInfo.colorSeparator);
+                        separator = outputColors[i].join(swatchInfo.colorSeparator);
+                    }
+                    if (swatchInfo.joinHex){
+                        separator = outputColors[i].join("");
+                    } else {
+                        separator = outputColors[i].join(swatchInfo.colorSeparator);
+                    }
+                    if (swatchInfo.addHash){
+                        if (swatchInfo.joinHex){
+                            separator = "#"+outputColors[i].join("");
+                        } else {
+                            separator = "#"+outputColors[i].join(swatchInfo.colorSeparator);
+                        }
+                    } else {
+                        separator = outputColors[i].join(swatchInfo.colorSeparator);
+                    }
                 } else {
-
-                    // separator = outputColors[i].join(" "+swatchInfo.colorSeparator);
                     separator = outputColors[i].join(swatchInfo.colorSeparator);
                 }
-                outputColors[i] = separator;
+                // if(printColors[i] == "HEX" && swatchInfo.joinHex && swatchInfo.addHash){
+                //     separator = "#"+outputColors[i].join("");
+                // } else {
+                //     // separator = outputColors[i].join(" "+swatchInfo.colorSeparator);
+                //     separator = outputColors[i].join(swatchInfo.colorSeparator);
+                // }
+                // if (printColors[i] == "HEX" && swatchInfo.joinHex){
+                //     separator = outputColors[i].join("");
+                // } else {
+                //     separator = outputColors[i].join(swatchInfo.colorSeparator);
+                // }
+                // if (printColors[i] == "HEX" && swatchInfo.addHash){
+                //     if (swatchInfo.joinHex){
+                //         separator = "#"+outputColors[i].join("");
+                //     } else {
+                //         separator = "#"+outputColors[i].join(swatchInfo.colorSeparator);
+                //     }
+                // } else {
+                //     separator = outputColors[i].join(swatchInfo.colorSeparator);
+                // }
+                // if(printColors[i] == "HEX" && swatchInfo.addHash){
+                //     separator = "#"+outputColors[i].join("");
+                // } else {
+                //     separator = outputColors[i].join(swatchInfo.colorSeparator);
+                // }
+                outputColors[i] = separator.toUpperCase();
                 if(!swatchInfo.splitColorComponents) outputColors[i] = printColors[i]+" "+outputColors[i]
             }
         };
@@ -541,6 +664,7 @@ function initSwatchInfo(swatchInfo,jsonData) {
         swatchInfo.nameColor = jsonData.nameColor;
         swatchInfo.colorSeparator = jsonData.colorSeparator; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
         swatchInfo.joinHex = jsonData.joinHex; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
+        swatchInfo.addHash = jsonData.addHash; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
         swatchInfo.splitColorComponents = jsonData.splitColorComponents;
         swatchInfo.textSize = jsonData.textSize; // output text size value in points
     } else {
@@ -553,6 +677,7 @@ function initSwatchInfo(swatchInfo,jsonData) {
         swatchInfo.nameColor = true;
         swatchInfo.colorSeparator = " "; // Character used to separate the colours eg "|" output = R: XXX|G: XXX|B: XXX
         swatchInfo.joinHex = false;
+        swatchInfo.addHash = false;
         swatchInfo.splitColorComponents = false;
         swatchInfo.textSize = 10; // output text size value in points
     }
@@ -561,7 +686,7 @@ function initSwatchInfo(swatchInfo,jsonData) {
 
 var swatchInfo = new Object();
 function getSwatchInfo() {
-
+    // alert(addSwatchGroup(doc))
     if (app.documents.length <= 0) {
         alert("No active document");
         // Dialog mdoe doesnt work in Illustrator
@@ -571,7 +696,14 @@ function getSwatchInfo() {
     } else if (swatches.length==0){
         alert("No swatches selected");
         return "cancel"; // quit, 
-    } 
+    }
+    // Check if active layer is visible and or unlocked
+    if (addSwatchGroup(doc)){
+            // pass silent
+        } else {
+            alert("Please make sure active layer is visible and unlocked")
+            return "cancel"
+    }  
     try {
         if (swatches[0].name=="[None]" || swatches[1].name=="[Registration]"){
             alert("This swatch can not be used");
@@ -589,6 +721,7 @@ function getSwatchInfo() {
     // if (DialogModes.ALL == app.playbackDisplayDialogs) {
     // }
     // alert(swatchInfo)
+
         main(swatchInfo);
 
         saveToJSON(swatchInfo);
@@ -608,6 +741,7 @@ function saveToJSON(swatchInfo){
     nameColor =swatchInfo.nameColor;
     colorSeparator =swatchInfo.colorSeparator;
     joinHex =swatchInfo.joinHex;
+    addHash =swatchInfo.addHash;
     splitColorComponents =swatchInfo.splitColorComponents;
     textSize =swatchInfo.textSize;
     var swatchLegenda = {
@@ -620,6 +754,7 @@ function saveToJSON(swatchInfo){
         nameColor : nameColor,
         colorSeparator : colorSeparator,
         joinHex : joinHex,
+        addHash : addHash,
         splitColorComponents : splitColorComponents,
         textSize : textSize,
     };

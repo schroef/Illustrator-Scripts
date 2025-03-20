@@ -14,6 +14,9 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
     - Fix issue when settings are stored for CMYK and then next document is RGB
 
     - Show Total shapes rename count shapes
+
+    - Fix issue when savedatajons has rgb and needs CMYK.
+      > Will output error > "Specified value greater than maximum allowed value"
 */
 ////////////////////////////////////////////////////////////
 
@@ -26,6 +29,14 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 //
 // Dialog Window and additional measurements Rombout Versluijs
 //
+// v0.1.7
+// 2024-02-11
+
+// Fixed
+// - convert wrong convertion used. issues with px and other metrics
+// - issue with visible or not visible layer placing ext > see returnVisibleLayer function > added var totlayers. Removed layer.active from loop
+// - Paste oathitens when expanding, now paste's in place. Solves issue with info positioned at the wrong place.
+
 // v0.1.6
 // 2023-10-28
 //
@@ -155,6 +166,7 @@ var runButtonID = 1;
 var cancelButtonID = 2;
 
 var exportInfo = new Object();
+var versionNum=app.version.split(".")[0] ;
 
 if (activeDocument.documentColorSpace == "DocumentColorSpace.RGB"){
     var space = "RGB";
@@ -223,7 +235,8 @@ function expandPluginItem(obj, pos){
     app.executeMenuCommand("copy");
     obj.selected = false;
     // obj.hidden = true;
-    app.executeMenuCommand("paste");
+    // app.executeMenuCommand("paste");
+    app.executeMenuCommand("pasteFront");
     var dup = app.activeDocument.selection[0];//[0];
     // alert(obj.position)
     // alert(pos)
@@ -356,12 +369,26 @@ function initExportInfo(exportInfo,jsonData) {
         } else {
             exportInfo[dataJson[i]] = jsonData[dataJson[i]];
         }
+
+        // TODO
+        // check if label color is RGB or CMYK
+        // Convert visa versa using RGB2CMYK and CMYK2RGB
+        
         // set pickedColor because we normally set this by the color button
         if (space=='CMYK') {
             pickedColor = new CMYKColor();
             if (jsonData.textLabelColor){
+                // alert("Set PickerColor from textLabelColor %s", jsonData.textLabelColor)
                 color = jsonData.textLabelColor.split('-');
-                exportInfo.textLabelColor = jsonData.textLabelColor;
+                // If saved color is RGB convert to CMYK
+                if (color.length == 3){
+                    color = RGB2CMYK(color, "initExportInfo");
+                    exportInfo.textLabelColor = color.C+"-"+color.M+"-"+color.Y+"-"+color.K;
+                    color = [color.C,color.M,color.Y,color.K];
+                } else {
+                    exportInfo.textLabelColor = jsonData.textLabelColor;
+                }
+                // exportInfo.textLabelColor = jsonData.textLabelColor;
             }
             if (jsonData.textLabelColor ===undefined){
                 color = [86,4,0,0];
@@ -376,7 +403,15 @@ function initExportInfo(exportInfo,jsonData) {
             pickedColor = new RGBColor();
             if (jsonData.textLabelColor){
                 color = jsonData.textLabelColor.split('-');
-                exportInfo.textLabelColor = jsonData.textLabelColor;
+                // If saved color is RGB convert to CMYK
+                if (color.length==4){
+                    color = CMYK2RGB(color, "initExportInfo");
+                    exportInfo.textLabelColor = color.r+"-"+color.g+"-"+color.b;
+                    color = [color.r,color.g,color.b];
+                } else {
+                    exportInfo.textLabelColor = jsonData.textLabelColor;
+                }
+                // exportInfo.textLabelColor = jsonData.textLabelColor;
             }
             if (jsonData.textLabelColor===undefined){
                 color = [54,174,234];
@@ -457,7 +492,7 @@ function settingDialog(exportInfo) {
     // GETSHAPEAREA
     // ============
     var dlgGetShapeArea = new Window("dialog"); 
-        dlgGetShapeArea.text = "Get Shape Area v0.1.6"; 
+        dlgGetShapeArea.text = "Get Shape Area v0.1.7"; 
         dlgGetShapeArea.orientation = "column"; 
         dlgGetShapeArea.alignChildren = ["center","top"]; 
         dlgGetShapeArea.spacing = 10; 
@@ -491,7 +526,7 @@ function settingDialog(exportInfo) {
     var cbIntersectingPaths = pnlSettings.add("checkbox", undefined, undefined, {name: "cbIntersectingPaths"}); 
         cbIntersectingPaths.text = "Intersecting Paths"; 
         cbIntersectingPaths.value = exportInfo.intersectingPaths; 
-        cbIntersectingPaths.helpTip = "Be careful with this option! Checking this value when paths do not overlap, the script will keep running coninously and never stop. You will need to Force Quit illustrator"; 
+        cbIntersectingPaths.helpTip = "Be careful with this option! Checking this value when paths do not overlap, the script will keep running coninously and never stop. You will need to Force Quit illustrator. Does not work when mixing other PathItems which are not overlapping"; 
     
 
     // PNLSETTINGS
@@ -523,24 +558,68 @@ function settingDialog(exportInfo) {
         
     if (space == "CMYK"){
         var storedColor = new CMYKColor();
-            digitalColor = exportInfo.textLabelColor.split('-');
+        // alert("Set ButtonColor CMYK2RGB from textLabelColor", jsonData.textLabelColor)
+        digitalColor = exportInfo.textLabelColor.split('-');
+        // If saved color is RGB convert to CMYK
+        if (digitalColor.length == 3){
+            var appColorPrint = digitalColor;
+            cmykBlackGrp.bgSwatchGrp.graphics.backgroundColor = cmykBlackGrp.graphics.newBrush(cmykBlackGrp.graphics.BrushType.SOLID_COLOR, [Number(appColorPrint[0]) / 255, Number(appColorPrint[1]) / 255, Number(appColorPrint[2]) / 255, 1]);
+        } else{
+            // alert(digitalColor[1])
             storedColor.cyan = digitalColor[0];
             storedColor.magenta = digitalColor[1];
             storedColor.yellow = digitalColor[2];
             storedColor.black = digitalColor[3];
-
-        var appColorPrint = CMYK2RGB(storedColor);
-        cmykBlackGrp.bgSwatchGrp.graphics.backgroundColor = cmykBlackGrp.graphics.newBrush(cmykBlackGrp.graphics.BrushType.SOLID_COLOR, [appColorPrint.r / 255, appColorPrint.g / 255, appColorPrint.b / 255, 1]);
+            var appColorPrint = CMYK2RGB(storedColor, "button");
+            // alert("appColorPrint.g "+appColorPrint.g)
+            cmykBlackGrp.bgSwatchGrp.graphics.backgroundColor = cmykBlackGrp.graphics.newBrush(cmykBlackGrp.graphics.BrushType.SOLID_COLOR, [appColorPrint.r / 255, appColorPrint.g / 255, appColorPrint.b / 255, 1]);
+        }
     }
     if (space == "RGB"){
         var storedColor = new RGBColor();
-            digitalColor = exportInfo.textLabelColor.split('-');
+        // alert("Set ButtonColor from textLabelColor", jsonData.textLabelColor)
+        digitalColor = exportInfo.textLabelColor.split('-');
+        // If saved color is RGB convert to CMYK
+        if (digitalColor.length == 4){
+            // alert(digitalColor[1])
+            storedColor.cyan = digitalColor[0];
+            storedColor.magenta = digitalColor[1];
+            storedColor.yellow = digitalColor[2];
+            storedColor.black = digitalColor[3];
+            var appColorPrint = CMYK2RGB(storedColor, "button");
+            // alert("appColorPrint[1] "+appColorPrint[1])
+            cmykBlackGrp.bgSwatchGrp.graphics.backgroundColor = cmykBlackGrp.graphics.newBrush(cmykBlackGrp.graphics.BrushType.SOLID_COLOR, [appColorPrint.r / 255, appColorPrint.g / 255, appColorPrint.b / 255, 1]);
+            // storedColor.red = digitalColor[0];
+            // storedColor.green = digitalColor[1];
+            // storedColor.blue = digitalColor[2];
+            
+            // var appColorDigital = storedColor;
+            // cmykBlackGrp.bgSwatchGrp.graphics.backgroundColor = cmykBlackGrp.graphics.newBrush(cmykBlackGrp.graphics.BrushType.SOLID_COLOR, [appColorDigital[0] / 255, appColorDigital[1] / 255, appColorDigital[2] / 255, 1]);
+        } else{
+            // var storedColor = new CMYKColor();
+            // storedColor.cyan = digitalColor[0];
+            // storedColor.magenta = digitalColor[1];
+            // storedColor.yellow = digitalColor[2];
+            // storedColor.black = digitalColor[3];
+
+            // var appColorPrint = CMYK2RGB(storedColor);
+            // storedColor.red = digitalColor[0];
+            // storedColor.green = digitalColor[1];
+            // storedColor.blue = digitalColor[2];
+
+            // var appColorDigital = storedColor;
+            // cmykBlackGrp.bgSwatchGrp.graphics.backgroundColor = cmykBlackGrp.graphics.newBrush(cmykBlackGrp.graphics.BrushType.SOLID_COLOR, [appColorDigital.red / 255, appColorDigital.green / 255, appColorDigital.blue / 255, 1]);
+            
+            // var storedColor = new RGBColor();
+            // digitalColor = exportInfo.textLabelColor.split('-');
+            // alert("digitalColor[1] "+digitalColor[1])
             storedColor.red = digitalColor[0];
             storedColor.green = digitalColor[1];
             storedColor.blue = digitalColor[2];
-
-        var appColorDigital = storedColor;
-        cmykBlackGrp.bgSwatchGrp.graphics.backgroundColor = cmykBlackGrp.graphics.newBrush(cmykBlackGrp.graphics.BrushType.SOLID_COLOR, [appColorDigital.red / 255, appColorDigital.green / 255, appColorDigital.blue / 255, 1]);
+            
+            var appColorDigital = storedColor;
+            cmykBlackGrp.bgSwatchGrp.graphics.backgroundColor = cmykBlackGrp.graphics.newBrush(cmykBlackGrp.graphics.BrushType.SOLID_COLOR, [appColorDigital.red / 255, appColorDigital.green / 255, appColorDigital.blue / 255, 1]);
+        }
     }
 
         
@@ -561,7 +640,7 @@ function settingDialog(exportInfo) {
             }
             var gfx = this.parent.graphics;
             if (space=="CMYK"){
-                var hsbCol = CMYK2RGB(pickedColor)
+                var hsbCol = CMYK2RGB(pickedColor, "button")
                 exportInfo.textLabelColor = pickedColor.cyan+"-"+pickedColor.magenta+"-"+pickedColor.yellow+"-"+pickedColor.black;
                 gfx.backgroundColor = gfx.newBrush(gfx.BrushType.SOLID_COLOR, [hsbCol.r / 255, hsbCol.g / 255, hsbCol.b / 255,1]);
             }
@@ -868,9 +947,6 @@ function settingDialog(exportInfo) {
     exportInfo.unitDoubleTwo = ddDoubleUnitsTwo.selection.text;
     exportInfo.unitDoubleTwoIndex = ddDoubleUnitsTwo.selection.index;
     exportInfo.intersectingPaths = cbIntersectingPaths.value;
-    // alert(exportInfo.unitSingle)
-    // alert(exportInfo.unitDoubleTwo)
-    // alert(exportInfo.unitDoubleOne)
 
     return result;    
 }
@@ -1010,6 +1086,7 @@ access it from the File > Scripts menu */
 var decimalPlaces = Number;
 
 function calculateArea(obj) {
+    // alert(obj.area)
 	if (obj.typename == "PathItem") {
 		return obj.area; // could be negative
 	} else if (obj.typename == "CompoundPathItem") {
@@ -1110,7 +1187,7 @@ function checkItem(item){
     
     function dig(item){
         var curSubItem;
-        alert(item.typename)
+        // alert(item.typename)
         if(item.typename === "CompoundPathItem" && item.pathItems.length && !result.valid){
             curSubItem = item.pathItems[0];
             result.fill = curSubItem.fillColor;
@@ -1140,31 +1217,52 @@ function convertAreaRealArea(exportInfo, areaInMeters) {
     realAreasq = Number(realAreaValue[1]) * Number(realAreaValue[1]);
     return areaInMeters*realAreasq
 }
+// function convertArea (area) {
+// 	var ppi = 72;
+// 	var result = {};
+// 	result.inch = area/ppi/ppi;
+// 	result.foot = result.inch * 0.00694444; // https://www.google.com/search?q=convert+square+inch+to+cm
+//     // https://www.conversionunites.com/converter-cm-to-mm
+// 	// https://www.mathsteacher.com.au/year7/ch13_area/02_calc/area.htm
+// 	// https://www.calculateme.com/length/centimeters/to-millimeters/16
+//     // https://www.unitconverters.net/typography/centimeter-to-pixel-x.htm
+//     // https://www.blitzresults.com/en/pixel/
+//     // https://graphicdesign.stackexchange.com/questions/199/point-vs-pixel-what-is-the-difference#:~:text=If%20your%20image%20is%2072ppi,will%20equal%20exactly%20one%20pixel.&text=Point%20is%20a%20physical%20unit%20of%20length%2C%20used%20in%20typography.&text=So%201%20pt%20%3D%201%2F72,%2C%201%20point%20%3D%201%20pixel.
+//     // https://www.researchgate.net/post/Can_anyone_help_me_in_conversion_of_Area_from_Sqpixels_to_Sqmm
+//     // https://community.adobe.com/t5/illustrator/is-there-a-way-to-calculate-the-area-of-a-shape/m-p/1181381#:~:text=Open%20the%20Measuring%20toolbar%20(View,the%20area%20will%20be%20displayed.
+// 	result.cm = result.inch * 6.4516;
+// 	result.m = result.cm  / 10000; // https://sciencing.com/convert-cm-meters-squared-8111525.html
+// 	result.mm = result.cm  * 100; //10 mm > 1cm;
+// 	result.pt = area; //result.mm * 28.346438836889; // 1cm > 28.3465 pt; 
+// 	// result.pt = result.cm * 803.524062; // 1cm > 28.3465 pt; 
+//     result.pc = result.cm  * 23.622049104098; // 1cm > 23.622049104098 pica; > 2.3622047244
+// 	// result.px = result.cm  * 3.7795275591; // 1cm > 37.795275591 pixel > 96dpi 
+//     // alert(area)
+// 	// result.px = result.mm * 28.3464567; // 1cm > 28.3464567 pixel; > photoshop?!? > 72 / 2.54 = 28.3464567
+// 	result.px = result.mm * 7.84; // 1cm > 28.3464567 pixel; > photoshop?!? > 72 / 2.54 = 28.3464567
+//     //803.521607 = 28.3464567 x 28.3464567
+//     // 784 = pixel rounded of 1cm x 1cm = 28px x 28px
+//     if(exportInfo.useRealArea){
+//         // result.rw = convertAreaRealArea(exportInfo, result.m)
+//         result.rw = convertAreaRealArea(exportInfo, result[exportInfo.realAreaUnit])
+//     }
+// 	return result;
+// }
+
+// https://www.unitsconverters.com/en/Point-To-Pixel/Unittounit-6131-6126
 function convertArea (area) {
 	var ppi = 72;
 	var result = {};
+    var root = Math.sqrt(area);
+    // alert(root)
 	result.inch = area/ppi/ppi;
-	result.foot = result.inch * 0.00694444; // https://www.google.com/search?q=convert+square+inch+to+cm
-    // https://www.conversionunites.com/converter-cm-to-mm
-	// https://www.mathsteacher.com.au/year7/ch13_area/02_calc/area.htm
-	// https://www.calculateme.com/length/centimeters/to-millimeters/16
-    // https://www.unitconverters.net/typography/centimeter-to-pixel-x.htm
-    // https://www.blitzresults.com/en/pixel/
-    // https://graphicdesign.stackexchange.com/questions/199/point-vs-pixel-what-is-the-difference#:~:text=If%20your%20image%20is%2072ppi,will%20equal%20exactly%20one%20pixel.&text=Point%20is%20a%20physical%20unit%20of%20length%2C%20used%20in%20typography.&text=So%201%20pt%20%3D%201%2F72,%2C%201%20point%20%3D%201%20pixel.
-    // https://www.researchgate.net/post/Can_anyone_help_me_in_conversion_of_Area_from_Sqpixels_to_Sqmm
-    // https://community.adobe.com/t5/illustrator/is-there-a-way-to-calculate-the-area-of-a-shape/m-p/1181381#:~:text=Open%20the%20Measuring%20toolbar%20(View,the%20area%20will%20be%20displayed.
-	result.cm = result.inch * 6.4516;
-	result.m = result.cm  / 10000; // https://sciencing.com/convert-cm-meters-squared-8111525.html
-	result.mm = result.cm  * 100; //10 mm > 1cm;
-	result.pt = area; //result.mm * 28.346438836889; // 1cm > 28.3465 pt; 
-	// result.pt = result.cm * 803.524062; // 1cm > 28.3465 pt; 
-    result.pc = result.cm  * 23.622049104098; // 1cm > 23.622049104098 pica; > 2.3622047244
-	// result.px = result.cm  * 3.7795275591; // 1cm > 37.795275591 pixel > 96dpi 
-    // alert(area)
-	// result.px = result.mm * 28.3464567; // 1cm > 28.3464567 pixel; > photoshop?!? > 72 / 2.54 = 28.3464567
-	result.px = result.mm * 7.84; // 1cm > 28.3464567 pixel; > photoshop?!? > 72 / 2.54 = 28.3464567
-    //803.521607 = 28.3464567 x 28.3464567
-    // 784 = pixel rounded of 1cm x 1cm = 28px x 28px
+	result.foot = Math.pow(root*0.00115740740752173,2);//area * 0.00115741; 
+	result.cm = Math.pow(root*0.0352777777814035,2)//area * 0.0352778;
+	result.m = Math.pow(root*0.000352777777814035,2)//result.cm / 10000; // https://sciencing.com/convert-cm-meters-squared-8111525.html
+	result.mm = Math.pow(root*0.3527777778,2)//(root*0.3527777778)*(root*0.3527777778);/// 8.035;//result.inch * 645.16;/// 0.0015500031000062; //* 645.16; //10 mm > 1cm;
+	result.pt = area; 
+    result.pc = Math.pow(root*0.0833333331863426,2)//area * 0.0833333;
+	result.px = Math.pow(root,2);//area * 1.3333333333333333;
     if(exportInfo.useRealArea){
         // result.rw = convertAreaRealArea(exportInfo, result.m)
         result.rw = convertAreaRealArea(exportInfo, result[exportInfo.realAreaUnit])
@@ -1173,7 +1271,9 @@ function convertArea (area) {
 }
 
 function getShapeArea(exportInfo, dup, obj, pos){
+    // alert(exportInfo+" "+dup+" "+obj+" "+pos)
     var objects = app.activeDocument.selection;
+    // alert(objects)
     // var objOrg = app.activeDocument.selection;
     // var display = ["Shape Area"];
     var display = [];
@@ -1200,13 +1300,14 @@ function getShapeArea(exportInfo, dup, obj, pos){
         // alert(objects[i].typename)
         if(objects[i].typename=="PluginItem"){
             // alert('PluginItem\'s cant be do calculate by script. This script duplicates the item and then does another pass. \n\nYou can double check the result at the end by axpanding the selected object and run the script again. The result should be the same.');
-            expandPluginItem(objects[i],  pos)
+            expandPluginItem(objects[i],pos)
             return
         }
         var area = calculateArea(objects[i]); // need absolute in case of PathItems
         // alert(area)
         // Complex objects return dupdupdupdupdupd plus area, this gives an error
         if (area=="dup"){
+            // alert(area)
             // var parentObj = app.activeDocument.selection[0];
             // alert(objects.length)
             if (objects.length <= 1) var pos = app.activeDocument.selection[0].position;
@@ -1219,7 +1320,8 @@ function getShapeArea(exportInfo, dup, obj, pos){
             }
             app.executeMenuCommand("copy");
             app.executeMenuCommand("deselectall");
-            app.executeMenuCommand("paste");
+            // app.executeMenuCommand("paste");
+            app.executeMenuCommand("pasteFront");
             // app.activeDocument.selection[0].position = pos; //[pos[0], pos[1]];//[100,100];//[3839.68698442494,-913.314050539961];//[200,200];//    
             // app.activeDocument.selection.position = pos;
             if (objects.length <= 1) app.activeDocument.selection[0].position = pos;
@@ -1235,20 +1337,26 @@ function getShapeArea(exportInfo, dup, obj, pos){
             app.executeMenuCommand("Live Pathfinder Trim");
             app.executeMenuCommand("expandStyle");
             
-            // Find empty path items and remove them
             var oldSelection = app.activeDocument.selection;
+            var obj = app.activeDocument.selection
+
+            /////////////////////////////////////////
+            // Used to work in older CS2017 now CS21+ it stops the script?
+            // Find empty path items and remove them
             // app.executeMenuCommand("deselectall");
-            var noneFill = app.activeDocument.swatches.getByName('[None]').color
-            // var noneFill = docRef.swatches.getByName('CMYK Red').color
-            // alert(noneFill)
-            app.activeDocument.defaultFillColor = noneFill; //docRef.swatches.getByName('[None]').color; //noneFill.color;
-            app.executeMenuCommand("Find Fill Color menu item");
-            // app.activeDocument.defaultFillColor = app.activeDocument.swatches.getByName('CMYK Red').color
-            app.executeMenuCommand("clear");
+            // alert(versionNum)
+            // if(versionNum<=27){
+            //     var noneFill = app.activeDocument.swatches.getByName('[None]').color
+            //     app.activeDocument.defaultFillColor = noneFill;
+            //     app.executeMenuCommand("Find Fill Color menu item");
+            //     app.executeMenuCommand("clear");
+            // }
+            /////////////////////////////////////////
             
             // oldSelection.selected = true
             // alert(oldSelection.selected)
             dup = oldSelection
+            // alert(dup)
             // alert(oldSelection.area)
             // app.executeMenuCommand("ungroup");
             // var dup = app.activeDocument.selection[0];
@@ -1261,12 +1369,13 @@ function getShapeArea(exportInfo, dup, obj, pos){
             app.executeMenuCommand("clear")
             break
         }
-        // alert(pos)
+        // alert("pos "+pos)
         // recheck so we can catch return strings
         area = Math.abs(area);
+        // alert(area)
         totalArea += area;
         var conv = convertArea(area);
-
+        
         // Show each path if true
         if(exportInfo.allShapes){
             // Edit comment below to get double units
@@ -1350,16 +1459,23 @@ txtColor.green = 113;
 txtColor.blue = 178;
 
 function returnVisibleLayer(totLayers){
+    // var totLayers = totLayers;   
     var docRef = app.activeDocument;
     var aLayer = docRef.activeLayer;
     try {
+        // alert(totLayers)
+        // if (totlayers==1){
+        //     docRef.activeLayer = docRef.layers[0];
+        //     return
+        // }
         if (app.activeDocument.layers[totLayers].visible){
             return; 
         } 
 
     } catch(e){
+        // alert(e)
         var newIndex = totLayers-1;
-        docRef.activeLayer = docRef.layers[newIndex];
+        // docRef.activeLayer = docRef.layers[newIndex];
         returnVisibleLayer(newIndex)
     }
 }
@@ -1369,7 +1485,8 @@ function placeTextLabel(data, obj, pos){
     var docRef = app.activeDocument;
     // obj.selected = true;
     // alert(docRef.activeLayer.visible)
-
+    // alert(docRef.activeLayer)
+    // docRef.activeLayer = docRef.layers[1];
     returnVisibleLayer(docRef.layers.length);
     var pathRef = obj;
     	//Create a textFrame and set its contents to areaMessage.
@@ -1431,8 +1548,8 @@ function HSBToRGB(hsb) {
 
 
 // Author RAG inc
-// Source AdobeCOlorCalculator
-
+// Source AdobeColorCalculator
+// Adjust to work shapeArea 2024-02-08
 // -------------------------------------------------------
 // RGBMetrics()        constructor
 // -------------------------------------------------------
@@ -1492,7 +1609,8 @@ function targetSpace(sourceSpace) {
 // RGB2CMYK()
 // accepts RGBMetrics, returns CMYKMetrics
 // -----------------------------------------
-function RGB2CMYK(RGB) {
+function RGB2CMYK(RGB, type) {
+    // alert(RGB)
     var sc, cmyk;
     var C, M, Y, K;
     if (app.name == 'Adobe Photosop') {
@@ -1505,18 +1623,25 @@ function RGB2CMYK(RGB) {
         Y = Math.round(sc.cmyk.yellow*100.0)/100.0;
         K = Math.round(sc.cmyk.black*100.0)/100.0;
     }
-    if (space == "RGB") {
+    if (space == "RGB" && type == "button") {
         sc = new RGBColor();
         sc.r = RGB.r;
         sc.g = RGB.g;
         sc.b =  RGB.b;
+        // sc.r = RGB[0];
+        // sc.g = RGB[1];
+        // sc.b =  RGB[2];
         // app.foregroundColor = sc
         // app.activeDocument.defaultFillColor = sc
         // alert(app.foregroundColor.c)
         sourceSpace = space;
         colorComponents = RGB.r,RGB.g,RGB.b;
-        // alert(targetSpace(sourceSpace))
         var returnColors = app.convertSampleColor(ImageColorSpace[sourceSpace], [RGB.r,RGB.g,RGB.b], ImageColorSpace[targetSpace(sourceSpace)], ColorConvertPurpose.previewpurpose);
+        alert(returnColors)
+        alert(returnColors.length)
+        // alert(targetSpace(sourceSpace))
+        // colorComponents = RGB[0],RGB[1],RGB[2];
+        // var returnColors = app.convertSampleColor(ImageColorSpace[sourceSpace], [RGB[0],RGB[1],RGB[2]], ImageColorSpace[targetSpace(sourceSpace)], ColorConvertPurpose.previewpurpose);
         // alert(returnColors[0])
         sc.cyan= returnColors[0];
         sc.magenta = returnColors[1];
@@ -1533,7 +1658,31 @@ function RGB2CMYK(RGB) {
         // alert(C+", "+M+", "+Y+", "+K)
     }
     if (space == "CMYK") colorType = new CMYKColor();
+    // if (app.name == 'Adobe Illustrator'){
+    //     RGB2CMYK(RGB)
+    // }
     // if (app.name == 'Adobe Illustrator') var sc = colorType;
+    if (typeof(RGB) == "object" && type=="initExportInfo") {
+        // alert("OBJECT > initExportInfo")
+        // alert(RGB[1])
+        sc = new RGBColor();
+        // alert("CMYJ TO RGB")
+        sc.red = RGB[0];
+        sc.green = RGB[1];
+        sc.blue =  RGB[2];
+        sourceSpace = space;
+        var returnColors = app.convertSampleColor(ImageColorSpace["RGB"], [RGB[0],RGB[1],RGB[2]], ImageColorSpace["CMYK"], ColorConvertPurpose.previewpurpose);
+        // alert(returnColors)
+        cyan= returnColors[0];
+        magenta = returnColors[1];
+        yellow= returnColors[2];
+        black= returnColors[3];
+        C = Math.round(cyan*100.0)/100.0;
+        M = Math.round(magenta*100.0)/100.0;
+        Y = Math.round(yellow*100.0)/100.0;
+        K = Math.round(black*100.0)/100.0;
+        // alert(C+", "+M+", "+Y+", "+K)
+    }
 
     cmyk = new CMYKMetrics(C, M, Y, K);
     return(cmyk);
@@ -1545,9 +1694,13 @@ function RGB2CMYK(RGB) {
 // accepts CMYKMetrics, returns RGBMetrics
 // Not from RagsInc > Rombout Versluijs 29-12-2022
 // Changed 2023-06-06 > need accept RGB documents aswell
+// Adstjest to work with json color formatting 0-0-0-0
 // -----------------------------------------
 
-function CMYK2RGB(CMYK) {
+function CMYK2RGB(CMYK, type) {
+    // alert(typeof(CMYK))
+    // alert("CMYK2RGB")
+    
     var sc, rgb;
     var R, G, B;
     if (app.name == 'Adobe Photoshop') {
@@ -1561,8 +1714,43 @@ function CMYK2RGB(CMYK) {
         B = Math.round(sc.rgb.blue*255.0)/255.0;
         rgb = new RGBMetrics(R, B, G);
     }
-    if (space == "CMYK" || (space == "RGB")) {
+    // alert(((space == "CMYK") && (type =="button")))
+    if (space == "CMYK" && type == "button") {
+    // if (space == "CMYK") {
+        // alert("BUTTON COLOR")
         var sc = new CMYKColor();
+        // alert(CMYK[1])
+        sc.cyan =   CMYK.cyan;
+        sc.magenta = CMYK.magenta;
+        sc.yellow =  CMYK.yellow;
+        sc.black =  CMYK.black;
+
+        // app.activeDocument.defaultFillColor = sc
+        sourceSpace = space;
+        var returnColors = app.convertSampleColor(ImageColorSpace[sourceSpace], [CMYK.cyan,CMYK.magenta,CMYK.yellow, CMYK.black], ImageColorSpace[targetSpace(sourceSpace)], ColorConvertPurpose.defaultpurpose);//previewpurpose);
+        // var sc = new RGBColor();
+        // // alert(returnColors)
+        // // alert(returnColors.length)
+        // // alert(returnColors[0])
+        // sc.red= returnColors[0];
+        // sc.green = returnColors[1];
+        // sc.blue= returnColors[2];
+        // R = Math.round(sc.red);
+        // G = Math.round(sc.green);
+        // B = Math.round(sc.blue);
+        sc.red= returnColors[0];
+        sc.green = returnColors[1];
+        sc.blue= returnColors[2];
+        R = Math.round(sc.red);
+        G = Math.round(sc.green);
+        B = Math.round(sc.blue);
+
+        rgb = new RGBMetrics(R, G, B);
+        // alert(rgb)
+    }
+    if (space == "RGB") {
+        var sc = new CMYKColor();
+        // alert(CMYK[1])
         sc.cyan =   CMYK.cyan;
         sc.magenta = CMYK.magenta;
         sc.yellow =  CMYK.yellow;
@@ -1580,5 +1768,31 @@ function CMYK2RGB(CMYK) {
 
         rgb = new RGBMetrics(R, G, B);
     }
+    // alert(typeof(CMYK) == "object")
+    if (typeof(CMYK) == "object" && type == "initExportInfo") {
+        // alert("OBJECT > initExportInfo")
+        // alert(CMYK[1])
+        var sc = new CMYKColor();
+        sc.cyan =  CMYK[0];
+        sc.magenta = CMYK[1];
+        sc.yellow =  CMYK[2];
+        sc.black =  CMYK[3];
+
+        // app.activeDocument.defaultFillColor = sc
+        sourceSpace = space;
+        var returnColors = app.convertSampleColor(ImageColorSpace["CMYK"], [CMYK[0],CMYK[1],CMYK[2],CMYK[3]], ImageColorSpace["RGB"], ColorConvertPurpose.defaultpurpose);//previewpurpose);
+        // alert(returnColors[0]+" "+returnColors[1]+" "+returnColors[2])
+        red= returnColors[0];
+        green = returnColors[1];
+        blue= returnColors[2];
+        R = Math.round(red);
+        G = Math.round(green);
+        B = Math.round(blue);
+
+        rgb = new RGBMetrics(R, G, B);
+    }
+    // alert(rgb)
+    // alert(rgb.r)
+    // alert(rgb.R)
     return(rgb);
 }

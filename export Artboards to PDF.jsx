@@ -7,22 +7,40 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 ///////////////////////////////////////////
 // TODO
 // Fix prefix and suffix are not stored
+// - Bleed doesnt work with small mm number > 2025-02-07
+// - If wroing artboards pages are given, error should show > 2025-02-07
+// - When changing one input in bleed and linked is one, all should change
+// - constrating button bleed needs to be saved > 2025-02-07
 ///////////////////////////////////////////
+/*
+
+/////////////////////////////////////////////////////////////////
+// Export Artboards to PDF v0.0.8 -- CC
 
 ///////////////////////////////////////////
-// KEEPACHANGELOG
+//  KEEPACHANGELOG
+    keepachangelog > https://keepachangelog.com/en/1.0.0/
 
-// 2023-08-22 v.0.0.6
-// Fixed
-// - Prefix and suffix was not saved to settings
-// - Bleed was added as points, but not converted properly > WIP needs input value dropdown
+    [v.0.0.8] 2025-03-30 
+    Fixed
+    - Issue with bleed not taking proper bleed unit value
+    
+    [v.0.0.7] 2023-12-28 
+    changed
+    - Added Math round to get round numbers return  
+    
+    [v.0.0.6] 2023-08-22 
+    Fixed
+    - Prefix and suffix was not saved to settings
+    - Bleed was added as points, but not converted properly > WIP needs input value dropdown
 
 ///////////////////////////////////////////
+*/
 
 // EXPORTDIALOG
 // ============
 var exportDialog = new Window("dialog"); 
-    exportDialog.text = "Export Artboards to PDF v0.0.6"; 
+    exportDialog.text = "Export Artboards to PDF v0.0.8"; 
     exportDialog.orientation = "column"; 
     exportDialog.alignChildren = ["fill","top"]; 
     exportDialog.spacing = 10; 
@@ -224,11 +242,13 @@ var bleedPnl = pdfSettingsTab.add("panel", undefined, undefined, {name: "bleedPn
 
 // BLEEDINPUTGRP
 // =============
+var helpTextToolTip = "Input is in mm, WIP we are going to add custom input metrics";
+
 var bleedInputGrp = bleedPnl.add("group", undefined, {name: "bleedInputGrp"}); 
     bleedInputGrp.orientation = "row"; 
     bleedInputGrp.alignChildren = ["left","center"]; 
     bleedInputGrp.spacing = 10; 
-    bleedInputGrp.margins = 0; 
+    bleedInputGrp.margins = 0;
 
 // BLEEDLCOLGRP
 // ============
@@ -252,6 +272,7 @@ var bleedTopLbl = bleedLeftGrp.add("statictext", undefined, undefined, {name: "b
 
 var bleedTopTxt = bleedLeftGrp.add('edittext {properties: {name: "bleedTopTxt"}}'); 
     bleedTopTxt.preferredSize.width = 60; 
+    bleedTopTxt.helpTip = helpTextToolTip;
 
 // BLEEDBOTTOMGRP
 // ==============
@@ -267,6 +288,7 @@ var bleedBottomLbl = bleedBottomGrp.add("statictext", undefined, undefined, {nam
 
 var bleedBottomTxt = bleedBottomGrp.add('edittext {properties: {name: "bleedBottomTxt"}}'); 
     bleedBottomTxt.preferredSize.width = 60; 
+    bleedBottomTxt.helpTip = helpTextToolTip;
 
 // BLEEDMIDDLECOLGRP
 // =================
@@ -278,11 +300,11 @@ var bleedMiddleColGrp = bleedInputGrp.add("group", undefined, {name: "bleedMiddl
     bleedMiddleColGrp.spacing = 10; 
     bleedMiddleColGrp.margins = 0; 
 
-var contrainBleedBtn_imgString = "%C2%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%1E%00%00%00%1E%08%06%00%00%00%3B0%C2%AE%C2%A2%00%00%00%19tEXtSoftware%00Adobe%20ImageReadyq%C3%89e%3C%00%00%01%07IDATx%C3%9A%C3%AC%C2%96%C3%BD%0D%C2%83%20%10%C3%85%C3%85t%00Fp%04Gh7p%04%C2%BBA%3B%C2%89%23t%C2%85n%C2%A0%1B%C3%98%11%C2%BA%C2%81n%40%1F%0D%C2%B4h%3DA%22%C3%B8G%7D%C3%89%C2%8B%17%14%7F%7C%C3%9C%11%C2%98%C2%80%C2%92%0D%C2%94%26%1B%C3%A9%60%C3%84W%C3%B8%11%C2%98%C2%97%C3%83%C3%95%3B%12_%1D%5Dz%C3%A2%C2%BB%1C%C3%A6%3ET%C3%89%C3%90%C2%B0tA%C2%A7%02%C3%AE%10%C2%B6p%C2%87%C3%B8%C3%A6%3B%00%C3%A7%19%C3%A3%5D%26%C2%A1%C3%A2WU%C3%A8%19%170'%C3%9A7%C3%89j%1E%1A%7C_%C3%98%C2%BE%0E%C2%981%C3%B6%C3%84%C3%A3%0C%C3%B7Fs%C2%A3J0%5Cr%19%C3%9Fr%C2%95%20Y%C2%B4rR3%C3%AF%C3%A1F%C2%AD%C2%809%C2%98Z%C3%96w%C2%B4%C3%A4Ru%5C%C3%83r%C2%B5%16%C3%81S%C3%8B%C2%8F%2B%C2%B8%C2%B4%40s%23%C3%83%C3%9D%C3%A1%C3%94%1E%C2%AB%C2%93I%C2%AB%C2%9C%C3%98%C3%ABVL%C2%AB%C2%A3%C3%A0%C3%A6%1EO%C2%82G%C3%90%01%C3%9C%02%C2%9D%C2%85%C3%8F%C2%82%09%C2%A8%C3%96%C3%85%01J%C3%82I%C2%B0%05%C3%AA%C2%A3%01%C2%9C%02%C2%B7%22%C2%8C%3Ep%13%C3%8C%22%5D%7D%C3%A4%C2%89w%C3%92%C2%99%1F%C3%B3%C3%AA3.%C2%BD%C2%84%C3%BD%C3%9Deo%07%C3%AF%C3%A0%1D%C2%BC%C2%9A%5E%02%0C%00u%C2%82%C2%98%3D%C3%8A%C2%8D%C3%B4%C2%B0%00%00%00%00IEND%C2%AEB%60%C2%82"; 
-// var contrainBleedBtn = bleedMiddleColGrp.add("image", undefined, File.decode(contrainBleedBtn_imgString), {name: "contrainBleedBtn"}); 
-// var contrainBleedBtn = bleedMiddleColGrp.add ("iconbutton", undefined, File.decode(contrainBleedBtn_imgString), {name: "contrainBleedBtn"}, {style: "toolbutton"}); // b
-// var contrainBleedBtn = bleedMiddleColGrp.add ("iconbutton", undefined, File.decode(contrainBleedBtn_imgString), {name: "contrainBleedBtn"}, {style: "toolbutton", toggle: true}); // b
-//     contrainBleedBtn.helpTip = "Contrain Width and Height Proportions"; 
+var constrainBleedBtn_imgString = "%C2%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%1E%00%00%00%1E%08%06%00%00%00%3B0%C2%AE%C2%A2%00%00%00%19tEXtSoftware%00Adobe%20ImageReadyq%C3%89e%3C%00%00%01%07IDATx%C3%9A%C3%AC%C2%96%C3%BD%0D%C2%83%20%10%C3%85%C3%85t%00Fp%04Gh7p%04%C2%BBA%3B%C2%89%23t%C2%85n%C2%A0%1B%C3%98%11%C2%BA%C2%81n%40%1F%0D%C2%B4h%3DA%22%C3%B8G%7D%C3%89%C2%8B%17%14%7F%7C%C3%9C%11%C2%98%C2%80%C2%92%0D%C2%94%26%1B%C3%A9%60%C3%84W%C3%B8%11%C2%98%C2%97%C3%83%C3%95%3B%12_%1D%5Dz%C3%A2%C2%BB%1C%C3%A6%3ET%C3%89%C3%90%C2%B0tA%C2%A7%02%C3%AE%10%C2%B6p%C2%87%C3%B8%C3%A6%3B%00%C3%A7%19%C3%A3%5D%26%C2%A1%C3%A2WU%C3%A8%19%170'%C3%9A7%C3%89j%1E%1A%7C_%C3%98%C2%BE%0E%C2%981%C3%B6%C3%84%C3%A3%0C%C3%B7Fs%C2%A3J0%5Cr%19%C3%9Fr%C2%95%20Y%C2%B4rR3%C3%AF%C3%A1F%C2%AD%C2%809%C2%98Z%C3%96w%C2%B4%C3%A4Ru%5C%C3%83r%C2%B5%16%C3%81S%C3%8B%C2%8F%2B%C2%B8%C2%B4%40s%23%C3%83%C3%9D%C3%A1%C3%94%1E%C2%AB%C2%93I%C2%AB%C2%9C%C3%98%C3%ABVL%C2%AB%C2%A3%C3%A0%C3%A6%1EO%C2%82G%C3%90%01%C3%9C%02%C2%9D%C2%85%C3%8F%C2%82%09%C2%A8%C3%96%C3%85%01J%C3%82I%C2%B0%05%C3%AA%C2%A3%01%C2%9C%02%C2%B7%22%C2%8C%3Ep%13%C3%8C%22%5D%7D%C3%A4%C2%89w%C3%92%C2%99%1F%C3%B3%C3%AA3.%C2%BD%C2%84%C3%BD%C3%9Deo%07%C3%AF%C3%A0%1D%C2%BC%C2%9A%5E%02%0C%00u%C2%82%C2%98%3D%C3%8A%C2%8D%C3%B4%C2%B0%00%00%00%00IEND%C2%AEB%60%C2%82"; 
+// var constrainBleedBtn = bleedMiddleColGrp.add("image", undefined, File.decode(constrainBleedBtn_imgString), {name: "constrainBleedBtn"}); 
+// var constrainBleedBtn = bleedMiddleColGrp.add ("iconbutton", undefined, File.decode(constrainBleedBtn_imgString), {name: "constrainBleedBtn"}, {style: "toolbutton"}); // b
+// var constrainBleedBtn = bleedMiddleColGrp.add ("iconbutton", undefined, File.decode(constrainBleedBtn_imgString), {name: "constrainBleedBtn"}, {style: "toolbutton", toggle: true}); // b
+//     constrainBleedBtn.helpTip = "constrain Width and Height Proportions"; 
 
 
 // BLEEDRCOLGRP
@@ -307,6 +329,7 @@ var bleedLeftLbl = bleedRGrp.add("statictext", undefined, undefined, {name: "ble
 
 var bleedLeftTxt = bleedRGrp.add('edittext {properties: {name: "bleedLeftTxt"}}'); 
     bleedLeftTxt.preferredSize.width = 60; 
+    bleedLeftTxt.helpTip = helpTextToolTip;
 
 // BLEEDRIGHTGRP
 // =============
@@ -322,6 +345,7 @@ var bleedRightLbl = bleedRightGrp.add("statictext", undefined, undefined, {name:
 
 var bleedRightTxt = bleedRightGrp.add('edittext {properties: {name: "bleedRightTxt"}}'); 
     bleedRightTxt.preferredSize.width = 60; 
+    bleedRightTxt.helpTip = helpTextToolTip;
 
 
 
@@ -399,10 +423,12 @@ var colorBarsChb = colorBarsGrp.add("checkbox", undefined, undefined, {name: "co
 
 var trimMarkOffsetLbl = colorBarsGrp.add("statictext", undefined, undefined, {name: "trimMarkOffsetLbl"}); 
     trimMarkOffsetLbl.text = "Offset"; 
+    trimMarkOffsetLbl.helpTip = "Custom offset in points for using the custom paper"; 
     trimMarkOffsetLbl.preferredSize.width = 102;  
 
 var trimMarkOffsetTxt = colorBarsGrp.add('edittext {properties: {name: "trimMarkOffsetTxt"}}'); 
     trimMarkOffsetTxt.preferredSize.width = 60; 
+    trimMarkOffsetTxt.helpTip = "Custom offset in points for using the custom paper"; 
 
 
 var pageInformationChb = printerMarksSubGrp.add("checkbox", undefined, undefined, {name: "pageInformationChb"}); 
@@ -705,7 +731,7 @@ function savePDF(destFolder, prefix, suffix, activeAB, abIndex, pdfPreset){
     // saveOptions.trapped = false;
     // bleed
     // bleedLink wont work without knowing doc bleed settings
-    // saveOptions.bleedLink = true;
+    saveOptions.bleedLink = true;
     // saveOptions.bleedLink = Boolean(useDocBleedChb.value);
     
     // Wrong return, returns points > input points not mm
@@ -713,7 +739,12 @@ function savePDF(destFolder, prefix, suffix, activeAB, abIndex, pdfPreset){
     var top =  Number(convertToUnit(bleedTopTxt.text, "pt"));
     var right = Number(convertToUnit(bleedRightTxt.text, "pt"));
     var bottom = Number(convertToUnit(bleedBottomTxt.text, "pt"));
+    // alert([left,top,right,bottom])
+    // alert([left.toFixed(2),top.toFixed(2),right.toFixed(2),bottom.toFixed(2)])
+    alert('input left '+Number(bleedLeftTxt.text))
+    alert('convtounit left '+Number(convertToUnit(bleedLeftTxt.text, "pt")))
     saveOptions.bleedOffsetRect = [left,top,right,bottom]; // L T R B
+    // saveOptions.bleedOffsetRect = [29]; // L T R B
 
     // var left = convertBleed(bleedLeftTxt.text);
     // var top =  convertBleed(bleedTopTxt.text);
@@ -797,18 +828,18 @@ var disabledIcon = "\u0089PNG\r\n\x1A\n\x00\x00\x00\rIHDR\x00\x00\x00\x1C\x00\x0
 // button handler
 // source: https://community.adobe.com/t5/photoshop-ecosystem-discussions/adding-images-to-buttons/m-p/9015917#M89489
 b = bleedMiddleColGrp.add ('button'); // works for customButton, iconButton, button  
-b.helpTip = "Contrain Width and Height Proportions"; 
+b.helpTip = "constrain Width and Height Proportions"; 
 b.preferredSize = [100,100];  
   
 // var roll = ScriptUI.newImage(icons.rollover);  
 // var norm = ScriptUI.newImage(icons.normal);  
 // var down = ScriptUI.newImage(icons.pressed);  
-            //    disable: File.decode(contrainBleedBtn_imgString),  
+            //    disable: File.decode(constrainBleedBtn_imgString),  
 var icons =  {normal: disabledIcon,
                pressed: activeIcon,
                rollover: hoverIcon,
 };  
-// var icons = File.decode(contrainBleedBtn_imgString);
+// var icons = File.decode(constrainBleedBtn_imgString);
 var roll = ScriptUI.newImage(icons.rollover);  
 var norm = ScriptUI.newImage(icons.normal);  
 var down = ScriptUI.newImage(icons.pressed);  
@@ -844,6 +875,9 @@ var mouseEventHandler = function(event) {
             // event.target.image = down;  
             b.image = keepProportions == true ? norm : down;  
             keepProportions = keepProportions != true;
+            if (keepProportions==true){
+                bleedBottomTxt.text = bleedLeftTxt.text = bleedRightTxt.text = bleedTopTxt.text;
+            }
             // b.image = this.keepProportions == true ? norm : down;  
             // this.keepProportions = this.keepProportions != true;
             break;  
@@ -917,6 +951,7 @@ bleedRightTxt.onChange =  function() {
 
 // Convert Units
 // Source: Specify.jsx
+// Added Math.round 2023-12-28
 function convertToUnit(value, unit) {
     switch (docRef.rulerUnits) {
         case RulerUnits.Picas:
@@ -934,10 +969,15 @@ function convertToUnit(value, unit) {
         case RulerUnits.Pixels:
             value = new UnitValue(value, "px").as(unit);
             break;
+        case RulerUnits.Points:
+            value = new UnitValue(value, "pt").as(unit);
+            break;
         default:
             value = new UnitValue(value, unit).as(unit);
     }
-    return value;
+    return value.toFixed(2)
+    // return value
+    // return Math.round(value)
 };
 
 ////////////////////////////////////////////
@@ -978,10 +1018,17 @@ function getSettings(){
     prefs.acrobatLayers = createLayersCHb.value;
 
     // Bleed
-    prefs.bleedLeft = Number(convertToUnit(bleedLeftTxt.text, "mm"));
-    prefs.bleedRight = Number(convertToUnit(bleedRightTxt.text, "mm"));
-    prefs.bleedTop = Number(convertToUnit(bleedTopTxt.text, "mm"));
-    prefs.bleedBottom = Number(convertToUnit(bleedBottomTxt.text, "mm"));
+    prefs.bleedLeft = Number(bleedLeftTxt.text);
+    prefs.bleedRight = Number(bleedRightTxt.text);
+    prefs.bleedTop = Number(bleedTopTxt.text,);
+    prefs.bleedBottom = Number(bleedBottomTxt.text);
+    alert(prefs.bleedLeft)
+    // Input is already in mm > 2025-02-07
+    // prefs.bleedLeft = Number(convertToUnit(bleedLeftTxt.text, "mm"));
+    // prefs.bleedRight = Number(convertToUnit(bleedRightTxt.text, "mm"));
+    // prefs.bleedTop = Number(convertToUnit(bleedTopTxt.text, "mm"));
+    // prefs.bleedBottom = Number(convertToUnit(bleedBottomTxt.text, "mm"));
+    // alert(prefs.bleedLeft)
 
     // Marks Tab
     prefs.allMarks = allPrinterMarksChb.value;
