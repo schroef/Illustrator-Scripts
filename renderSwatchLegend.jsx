@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////
-// Render Swatch Legend v1.5.3 -- CC
+// Render Swatch Legend v1.5.4 -- CC
 //>=--------------------------------------
 //
 //  This script will generate a legend of rectangles for every swatch in the main swatches palette.
@@ -9,6 +9,10 @@
 /*
     Changelog
     keepachangelog > https://keepachangelog.com/en/1.0.0/
+
+    [1.5.4] 2025-03-24
+    Fixed
+    - # not working when Join is not active
 
     [1.5.3] 2025-03-20
     Fixed
@@ -96,7 +100,7 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 // SWATCHLEGENDDLG
 // ====================
 var SwatchLegendDlg = new Window("dialog"); 
-    SwatchLegendDlg.text = "Swatch Legend v1.5.3"; 
+    SwatchLegendDlg.text = "Swatch Legend v1.5.4"; 
     SwatchLegendDlg.orientation = "column"; 
     SwatchLegendDlg.alignChildren = ["left","top"]; 
     SwatchLegendDlg.spacing = 10; 
@@ -537,22 +541,18 @@ function getColorValues(c, spot) {
                     // outputColors[i] = outputColors[i].toString().toUpperCase();
                     if (swatchInfo.joinHex && swatchInfo.addHash){
                         separator = "#"+outputColors[i].join("");
-                    } else {
-                        // separator = outputColors[i].join(" "+swatchInfo.colorSeparator);
-                        separator = outputColors[i].join(swatchInfo.colorSeparator);
-                    }
-                    if (swatchInfo.joinHex){
+                    } 
+                    if (swatchInfo.joinHex && !swatchInfo.addHash){
                         separator = outputColors[i].join("");
-                    } else {
-                        separator = outputColors[i].join(swatchInfo.colorSeparator);
-                    }
-                    if (swatchInfo.addHash){
-                        if (swatchInfo.joinHex){
-                            separator = "#"+outputColors[i].join("");
+                    } 
+                    if (swatchInfo.addHash && !swatchInfo.joinHex){
+                        if (swatchInfo.addHash){
+                            separator = "#"+outputColors[i].toString().replace(',',' ').replace(',',' ');
                         } else {
                             separator = "#"+outputColors[i].join(swatchInfo.colorSeparator);
                         }
-                    } else {
+                    } 
+                    if (!swatchInfo.joinHex && !swatchInfo.addHash) {
                         separator = outputColors[i].join(swatchInfo.colorSeparator);
                     }
                 } else {
@@ -584,7 +584,9 @@ function getColorValues(c, spot) {
                 //     separator = outputColors[i].join(swatchInfo.colorSeparator);
                 // }
                 outputColors[i] = separator.toUpperCase();
-                if(!swatchInfo.splitColorComponents) outputColors[i] = printColors[i]+" "+outputColors[i]
+                if(!swatchInfo.splitColorComponents) {
+                    outputColors[i] = printColors[i]+" "+outputColors[i]
+                }
             }
         };
         return outputColors.join("");
