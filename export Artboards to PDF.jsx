@@ -15,11 +15,18 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 /*
 
 /////////////////////////////////////////////////////////////////
-// Export Artboards to PDF v0.0.8 -- CC
+// Export Artboards to PDF v0.0.9 -- CC
 
 ///////////////////////////////////////////
 //  KEEPACHANGELOG
     keepachangelog > https://keepachangelog.com/en/1.0.0/
+
+    [v.0.0.9] 2025-05-09
+    Fixed
+    - Missing Keep Proprptiosn in stored settings 
+    
+    Added
+    - Units dropdown for bleed settings, better control and more clear
 
     [v.0.0.8] 2025-03-30 
     Fixed
@@ -40,7 +47,7 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 // EXPORTDIALOG
 // ============
 var exportDialog = new Window("dialog"); 
-    exportDialog.text = "Export Artboards to PDF v0.0.8"; 
+    exportDialog.text = "Export Artboards to PDF v0.0.9"; 
     exportDialog.orientation = "column"; 
     exportDialog.alignChildren = ["fill","top"]; 
     exportDialog.spacing = 10; 
@@ -244,11 +251,31 @@ var bleedPnl = pdfSettingsTab.add("panel", undefined, undefined, {name: "bleedPn
 // =============
 var helpTextToolTip = "Input is in mm, WIP we are going to add custom input metrics";
 
+// BLEEDUNITGRP
+// ============
+var bleedUnitGrp = bleedPnl.add("group", undefined, {name: "bleedUnitGrp"}); 
+    bleedUnitGrp.orientation = "row"; 
+    bleedUnitGrp.alignChildren = ["left","center"]; 
+    bleedUnitGrp.preferredSize.width = 140; 
+    bleedUnitGrp.spacing = 10; 
+    bleedUnitGrp.margins = 0; 
+    
 var bleedInputGrp = bleedPnl.add("group", undefined, {name: "bleedInputGrp"}); 
     bleedInputGrp.orientation = "row"; 
     bleedInputGrp.alignChildren = ["left","center"]; 
     bleedInputGrp.spacing = 10; 
     bleedInputGrp.margins = 0;
+
+
+var bleedUnitLbl = bleedUnitGrp.add("statictext", undefined, undefined, {name: "bleedUnitLbl"}); 
+    bleedUnitLbl.text = "Units"; 
+    bleedUnitLbl.preferredSize.width = 48; 
+
+
+// var bleedUnitsDropDown_array = [("px","Pixels"),("mm","Millimeters"), ("cm","Centimeter"), ("pc", "Picas")]; 
+var bleedUnitsDropDown_array = ["px","mm","cm","in","pt","pc"]; 
+var bleedUnitsDropDown = bleedUnitGrp.add("dropdownlist", undefined, undefined, {name: "bleedUnitsDropDown", items: bleedUnitsDropDown_array}); 
+    bleedUnitsDropDown.selection = 0; 
 
 // BLEEDLCOLGRP
 // ============
@@ -257,6 +284,7 @@ var bleedLColGrp = bleedInputGrp.add("group", undefined, {name: "bleedLColGrp"})
     bleedLColGrp.alignChildren = ["left","center"]; 
     bleedLColGrp.spacing = 10; 
     bleedLColGrp.margins = 0; 
+
 
 // BLEEDLEFTGRP
 // ============
@@ -741,8 +769,8 @@ function savePDF(destFolder, prefix, suffix, activeAB, abIndex, pdfPreset){
     var bottom = Number(convertToUnit(bleedBottomTxt.text, "pt"));
     // alert([left,top,right,bottom])
     // alert([left.toFixed(2),top.toFixed(2),right.toFixed(2),bottom.toFixed(2)])
-    alert('input left '+Number(bleedLeftTxt.text))
-    alert('convtounit left '+Number(convertToUnit(bleedLeftTxt.text, "pt")))
+    // alert('input left '+Number(bleedLeftTxt.text))
+    // alert('convtounit left '+Number(convertToUnit(bleedLeftTxt.text, "pt")))
     saveOptions.bleedOffsetRect = [left,top,right,bottom]; // L T R B
     // saveOptions.bleedOffsetRect = [29]; // L T R B
 
@@ -827,9 +855,9 @@ var disabledIcon = "\u0089PNG\r\n\x1A\n\x00\x00\x00\rIHDR\x00\x00\x00\x1C\x00\x0
 
 // button handler
 // source: https://community.adobe.com/t5/photoshop-ecosystem-discussions/adding-images-to-buttons/m-p/9015917#M89489
-b = bleedMiddleColGrp.add ('button'); // works for customButton, iconButton, button  
-b.helpTip = "constrain Width and Height Proportions"; 
-b.preferredSize = [100,100];  
+keepProportionsBtn = bleedMiddleColGrp.add ('button'); // works for customButton, iconButton, button  
+keepProportionsBtn.helpTip = "Constrain Width and Height Proportions"; 
+keepProportionsBtn.preferredSize = [100,100];  
   
 // var roll = ScriptUI.newImage(icons.rollover);  
 // var norm = ScriptUI.newImage(icons.normal);  
@@ -843,67 +871,133 @@ var icons =  {normal: disabledIcon,
 var roll = ScriptUI.newImage(icons.rollover);  
 var norm = ScriptUI.newImage(icons.normal);  
 var down = ScriptUI.newImage(icons.pressed);  
-var keepProportions = Boolean(false);    
-b.image = norm;  
-b.size = [40, 40]  
-b.onDraw = function (state) {  
+var keepProportions = Boolean(false); //prefs.keepProportions; //
+keepProportionsBtn.image = norm;  
+keepProportionsBtn.size = [40, 40]  
+keepProportionsBtn.onDraw = function (state) {  
     this.graphics.drawImage(this.image,0,0);  
 }  
-// b.onClick = function(){
+// keepProportionsBtn.onClick = function(){
 //     this.keepProportions == true ? true : false;
 // }  
-var mouseEventHandler = function(event) {  
+
+var mouseEvntHandKeepProportions = function(event) {  
     switch (event.type) {  
         // case 'mouseover':   
         //     // alert("hover")
         //     // event.target.image = roll;  
-        //     // b.image = roll;
+        //     // keepProportionsBtn.image = roll;
         //     // alert(this.keepProportions)
-        //     b.image = this.keepProportions == true ? down : norm;  
+        //     keepProportionsBtn.image = this.keepProportions == true ? down : norm;  
         //     break;  
         // case 'mouseout':   
         //     // event.target.image = norm;  
-        //     // b.image = norm;
+        //     // keepProportionsBtn.image = norm;
         //     if (this.keepProportions){
-        //         b.image = this.keepProportions == true ? down : roll;  
+        //         keepProportionsBtn.image = this.keepProportions == true ? down : roll;  
         //     } else {
-        //         b.image = this.keepProportions == true ? roll: norm ;  
+        //         keepProportionsBtn.image = this.keepProportions == true ? roll: norm ;  
 
         //     }
         //     break;  
         case 'mousedown':  
             // event.target.image = down;  
-            b.image = keepProportions == true ? norm : down;  
+            keepProportionsBtn.image = keepProportions == true ? norm : down;  
             keepProportions = keepProportions != true;
             if (keepProportions==true){
                 bleedBottomTxt.text = bleedLeftTxt.text = bleedRightTxt.text = bleedTopTxt.text;
             }
-            // b.image = this.keepProportions == true ? norm : down;  
+            // keepProportionsBtn.image = this.keepProportions == true ? norm : down;  
             // this.keepProportions = this.keepProportions != true;
             break;  
         // case 'mouseup':
         //     if (keepProportions==false){
-        //         b.image = roll;  
+        //         keepProportionsBtn.image = roll;  
         //     }
         //     break;  
         // default:   
-            // alert(keepProportions)
-            // b.image = keepProportions == true ? down : norm;  
+            // keepProportionsBtn.image = keepProportions == true ? down : norm;  
     }  
-    // alert(keepProportions)
     event.target.notify("onDraw");  
 }  
   
-b.addEventListener('mouseover', mouseEventHandler, false);  
-b.addEventListener('mouseout', mouseEventHandler, false);  
-b.addEventListener('mousedown', mouseEventHandler, false);  
-b.addEventListener('mouseup', mouseEventHandler, false);  
+keepProportionsBtn.addEventListener('mouseover', mouseEvntHandKeepProportions, false);  
+keepProportionsBtn.addEventListener('mouseout', mouseEvntHandKeepProportions, false);  
+keepProportionsBtn.addEventListener('mousedown', mouseEvntHandKeepProportions, false);  
+keepProportionsBtn.addEventListener('mouseup', mouseEvntHandKeepProportions, false);  
 
 
+function setProportionsBtn(keepProportionsBtn,keepProportions){
+    if (keepProportions){
+        // keepProportionsBtn.click();
+        // keepProportionsBtn.dispatchEvent("click");
+        // keepProportionsBtn.notify('onClick');
+        // alert(keepProportionsBtn)
+        // keepProportionsBtn.dispatchEvent(dispatchEvent(new Event("mousedown")));
+        // keepProportionsBtn.dispatchEvent(new Event('mousedown', {bubbles:true}));
+        keepProportions = true
+        keepProportionsBtn.image = down;
+        // keepProportionsBtn.trigger("mouseup")
+        // keepProportionsBtn.dispatchEvent(mouseEvntHandKeepProportions, true)
+        // keepProportionsBtn.trigger("mouseup")
+        // keepProportionsBtn.dispatchEvent(new Event('mousedown', true));
+        // keepProportionsBtn.dispatchEvent("mousedown", true);
+        // keepProportionsBtn.dispatchEvent("mousedown");
+        // mouseEvntHandKeepProportions("click")
+        // keepProportionsBtn.mouseEvntHandKeepProportions("mousedown")
+        // .click();
+    } else {
+        keepProportions = true
+        keepProportionsBtn.image = norm;
+
+    }
+
+}
 // useDocBleedChb.onClick = function() {
 //     bleedLColGrp.enabled = bleedLColGrp.enabled == false ? true : false ;
 //     bleedRColGrp.enabled = bleedRColGrp.enabled == false ? true : false ;
 // }
+
+// Add units
+function addUnits(){
+    var bL = bleedLeftTxt.text;
+    var bT = bleedTopTxt.text;
+    var bR = bleedRightTxt.text;
+    var bB = bleedBottomTxt.text;
+    var bleedLeft = bL.replace(/\D/g, "");
+    var bleedTop = bT.replace(/\D/g, "");
+    var bleedRight = bR.replace(/\D/g, "");
+    var bleedBottom = bB.replace(/\D/g, "");
+    // alert(bleedBottom)
+    // var remove = new Regex("[^0-9.]");
+    var patt = /^[0-9]{1,3}$/g; ///\d/g;
+    var results = bleedBottom.match(patt)
+    var resultValues = results != null;
+    var unitValue = " "+bleedUnitsDropDown.selection.text;
+    // var filter = value.Replace("/^[^0-9.]", "");
+    // var r = new Regex("(?:^|[^w.,])(\d[\d,.]+)(?=\W|$)/)");
+    var r = /^[0-9]{1,3}$/g;
+    // alert(unitValue)
+
+    // https://github.com/wearebraid/vue-formulate/issues/67
+    // var strippedValue = x.replace(/[^0-9]/g, ""); 
+    // var chars = strippedValue.split(''); 
+    // alert(resultValues)
+    // alert(Boolean(resultValues)===true)
+    if (resultValues) {
+        if (keepProportions) {
+            bleedLeftTxt.text = bleedTopTxt.text = bleedBottomTxt.text = bleedRightTxt.text = bleedBottom + unitValue;
+        }
+    }
+    if(!keepProportions) {
+        bleedLeftTxt.text = bleedLeft + unitValue
+        bleedTopTxt.text = bleedTop + unitValue
+        bleedBottomTxt.text = bleedBottom + unitValue
+        bleedRightTxt.text = bleedRight + unitValue
+    }
+}
+
+
 // Change units bleed
 function setUnits(unit){
     if (unit=="top"){
@@ -927,55 +1021,92 @@ function setUnits(unit){
         }
     }
 }
-bleedTopTxt.onChange =  function() {
+bleedTopTxt.onChange = function() {
     // setUnits("top")
+
     if (keepProportions){
-            bleedBottomTxt.text = bleedLeftTxt.text = bleedRightTxt.text = bleedTopTxt.text;
-        }
+        bleedBottomTxt.text = bleedLeftTxt.text = bleedRightTxt.text = bleedTopTxt.text;
+    }
+    addUnits()
 }
 bleedBottomTxt.onChange =  function() {
     if (keepProportions){
-            bleedLeftTxt.text = bleedRightTxt.text = bleedTopTxt.text = bleedBottomTxt.text;
-        }
+        bleedLeftTxt.text = bleedRightTxt.text = bleedTopTxt.text = bleedBottomTxt.text;
+    }
+    addUnits()
 }
 bleedLeftTxt.onChange =  function() {
      if (keepProportions){
-            bleedBottomTxt.text = bleedRightTxt.text = bleedTopTxt.text = bleedLeftTxt.text;
-        }
+        bleedBottomTxt.text = bleedRightTxt.text = bleedTopTxt.text = bleedLeftTxt.text;
+    }
+    addUnits()
 }
+
 bleedRightTxt.onChange =  function() {
     if (keepProportions){
-            bleedLeftTxt.text = bleedTopTxt.text = bleedBottomTxt.text = bleedRightTxt.text;
-        }
+        bleedLeftTxt.text = bleedTopTxt.text = bleedBottomTxt.text = bleedRightTxt.text;
+    }
+    addUnits()
 }
+
+bleedUnitsDropDown.onChange = function(){
+    addUnits()
+}
+
 
 // Convert Units
 // Source: Specify.jsx
 // Added Math.round 2023-12-28
 function convertToUnit(value, unit) {
-    switch (docRef.rulerUnits) {
-        case RulerUnits.Picas:
+    switch (bleedUnitsDropDown.selection.text) {
+        // alert(bleedUnitsDropDown.selection.text)
+        case "pc":
             value = new UnitValue(value, "pc").as(unit);
             break;
-        case RulerUnits.Inches:
+        case "in":
             value = new UnitValue(value, "in").as(unit);
             break;
-        case RulerUnits.Millimeters:
+        case "mm":
             value = new UnitValue(value, "mm").as(unit);
             break;
-        case RulerUnits.Centimeters:
+        case "cm":
             value = new UnitValue(value, "cm").as(unit);
             break;
-        case RulerUnits.Pixels:
+        case "px":
             value = new UnitValue(value, "px").as(unit);
             break;
-        case RulerUnits.Points:
+        case "pt":
             value = new UnitValue(value, "pt").as(unit);
             break;
         default:
             value = new UnitValue(value, unit).as(unit);
     }
-    return value.toFixed(2)
+    // Use document units
+    // switch (docRef.rulerUnits) {
+    //     case RulerUnits.Picas:
+    //         value = new UnitValue(value, "pc").as(unit);
+    //         break;
+    //     case RulerUnits.Inches:
+    //         value = new UnitValue(value, "in").as(unit);
+    //         break;
+    //     case RulerUnits.Millimeters:
+    //         value = new UnitValue(value, "mm").as(unit);
+    //         break;
+    //     case RulerUnits.Centimeters:
+    //         value = new UnitValue(value, "cm").as(unit);
+    //         break;
+    //     case RulerUnits.Pixels:
+    //         value = new UnitValue(value, "px").as(unit);
+    //         break;
+    //     case RulerUnits.Points:
+    //         value = new UnitValue(value, "pt").as(unit);
+    //         break;
+    //     default:
+    //         value = new UnitValue(value, unit).as(unit);
+    // }
+    // alert(value)
+    return value
+    // return value.toFixed(2)
     // return value
     // return Math.round(value)
 };
@@ -1018,11 +1149,13 @@ function getSettings(){
     prefs.acrobatLayers = createLayersCHb.value;
 
     // Bleed
+    prefs.bleedUnits = bleedUnitsDropDown.selection.index;
+    prefs.keepProportions = keepProportions;
     prefs.bleedLeft = Number(bleedLeftTxt.text);
     prefs.bleedRight = Number(bleedRightTxt.text);
     prefs.bleedTop = Number(bleedTopTxt.text,);
     prefs.bleedBottom = Number(bleedBottomTxt.text);
-    alert(prefs.bleedLeft)
+    // alert(prefs.bleedLeft)
     // Input is already in mm > 2025-02-07
     // prefs.bleedLeft = Number(convertToUnit(bleedLeftTxt.text, "mm"));
     // prefs.bleedRight = Number(convertToUnit(bleedRightTxt.text, "mm"));
@@ -1077,7 +1210,10 @@ function readSettings(){
         optimizePdfCHb.value = prefs.optimizePdf;
         preserveEditiballityCHb.value= prefs.preserveEditability;
         createLayersCHb.value = prefs.acrobatLayers;
+
         // bleed
+        bleedUnitsDropDown.selection = prefs.bleedUnits;
+        keepProportions = Boolean(prefs.keepProportions);
         bleedLeftTxt.text= prefs.bleedLeft;
         bleedRightTxt.text= prefs.bleedRight;
         bleedTopTxt.text= prefs.bleedTop;
@@ -1094,10 +1230,13 @@ function readSettings(){
         trimMarkOffsetTxt.text = prefs.offset;
         colorBarsChb.value = prefs.colorBars;
         pageInformationChb.value = prefs.pageInformation;
+
         setAllPrinterMarks()
 
         file.close();
         getArtboardsRange()
+
+        setProportionsBtn(keepProportionsBtn,keepProportions)
     } else {
         vertTabbedPnl_nav.selection = 0;
     }
@@ -1135,4 +1274,5 @@ function convertBleed (bleed) {
 
 
 readSettings();
+addUnits()
 exportDialog.show();
