@@ -227,6 +227,20 @@ function getDialog(exportInfo) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// Function: getScaleFactor
+// Usage: return document scaleFactor
+// Input: activeDocument
+// Return: scale factor
+///////////////////////////////////////////////////////////////////////////////
+function getScaleFactor(){
+    try {
+        var sf = app.activeDocument.scaleFactor;
+    } catch(e) {
+        var sf = 1;
+    }
+    return sf
+}
+///////////////////////////////////////////////////////////////////////////////
 // Function: expandPluginItem
 // Usage: duplciaet and expand plugin item
 // Input: select object
@@ -1092,9 +1106,10 @@ access it from the File > Scripts menu */
 var decimalPlaces = Number;
 
 function calculateArea(obj) {
+    var sf = getScaleFactor();
     // alert(obj.area)
 	if (obj.typename == "PathItem") {
-		return obj.area; // could be negative
+		return obj.area * sf; // could be negative
 	} else if (obj.typename == "CompoundPathItem") {
 		var totalArea = 0;
         var shapeArea = 0;
@@ -1257,22 +1272,17 @@ function convertAreaRealArea(exportInfo, areaInMeters) {
 
 // https://www.unitsconverters.com/en/Point-To-Pixel/Unittounit-6131-6126
 function convertArea (area) {
-	try {
-        var sf = app.activeDocument.scaleFactor;
-    } catch(e) {
-        var sf = 1;
-    }
+	var sf = getScaleFactor();
 	var ppi = 72;
 	var result = {};
     var root = Math.sqrt((area * sf));
-
-    // alert(root)
+    
 	result.inch = area/ppi/ppi;
 	result.foot = Math.pow(root*0.00115740740752173,2);//area * 0.00115741; 
 	result.cm = Math.pow(root*0.0352777777814035,2)//area * 0.0352778;
 	result.m = Math.pow(root*0.000352777777814035,2)//result.cm / 10000; // https://sciencing.com/convert-cm-meters-squared-8111525.html
 	result.mm = Math.pow(root*0.3527777778,2)//(root*0.3527777778)*(root*0.3527777778);/// 8.035;//result.inch * 645.16;/// 0.0015500031000062; //* 645.16; //10 mm > 1cm;
-	result.pt = area; 
+	result.pt = area * sf; 
     result.pc = Math.pow(root*0.0833333331863426,2)//area * 0.0833333;
 	result.px = Math.pow(root,2);//area * 1.3333333333333333;
     if(exportInfo.useRealArea){
@@ -1494,6 +1504,7 @@ function returnVisibleLayer(totLayers){
 
 
 function placeTextLabel(data, obj, pos){
+    var sf = getScaleFactor();
     var docRef = app.activeDocument;
     // obj.selected = true;
     // alert(docRef.activeLayer.visible)
@@ -1507,10 +1518,11 @@ function placeTextLabel(data, obj, pos){
 	for(i=0;i<areaLabel.paragraphs.length;i++){
 		areaLabel.paragraphs[i].justification=Justification.LEFT;
 		areaLabel.paragraphs[i].fillColor = pickedColor;
+	    // areaLabel.paragraphs[i].size = 12 //* (sf/3);
 	}
 	// areaLabel.position = pos;
 	//Position areaLabel at the center of the selected path.
-	areaLabel.top = pathRef.top+areaLabel.height+4;//-pathRef.height/2+areaLabel.height/2;
+	areaLabel.top = pathRef.top+areaLabel.height+4 / sf; //-pathRef.height/2+areaLabel.height/2;
 	areaLabel.left = pathRef.left+pathRef.width/2-areaLabel.width/2;
 
 }
