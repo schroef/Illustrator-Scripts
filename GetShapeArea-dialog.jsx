@@ -29,6 +29,12 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 //
 // Dialog Window and additional measurements Rombout Versluijs
 //
+// v0.1.7.1
+// 2025-05-19
+
+// Added
+// - scaleFactor > works with large documents and uses scaleFacor
+
 // v0.1.7
 // 2024-02-11
 
@@ -492,7 +498,7 @@ function settingDialog(exportInfo) {
     // GETSHAPEAREA
     // ============
     var dlgGetShapeArea = new Window("dialog"); 
-        dlgGetShapeArea.text = "Get Shape Area v0.1.7"; 
+        dlgGetShapeArea.text = "Get Shape Area v0.1.7.1"; 
         dlgGetShapeArea.orientation = "column"; 
         dlgGetShapeArea.alignChildren = ["center","top"]; 
         dlgGetShapeArea.spacing = 10; 
@@ -1251,9 +1257,15 @@ function convertAreaRealArea(exportInfo, areaInMeters) {
 
 // https://www.unitsconverters.com/en/Point-To-Pixel/Unittounit-6131-6126
 function convertArea (area) {
+	try {
+        var sf = app.activeDocument.scaleFactor;
+    } catch(e) {
+        var sf = 1;
+    }
 	var ppi = 72;
 	var result = {};
-    var root = Math.sqrt(area);
+    var root = Math.sqrt((area * sf));
+
     // alert(root)
 	result.inch = area/ppi/ppi;
 	result.foot = Math.pow(root*0.00115740740752173,2);//area * 0.00115741; 
