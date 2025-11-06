@@ -21,6 +21,10 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 //  KEEPACHANGELOG
     keepachangelog > https://keepachangelog.com/en/1.0.0/
 
+    [v.0.1.0] 2025-11-06
+    Fixed
+    - reading and writing stored preferences on OSX
+    
     [v.0.0.9] 2025-05-09
     Fixed
     - Missing Keep Proprptiosn in stored settings 
@@ -47,7 +51,7 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 // EXPORTDIALOG
 // ============
 var exportDialog = new Window("dialog"); 
-    exportDialog.text = "Export Artboards to PDF v0.0.9"; 
+    exportDialog.text = "Export Artboards to PDF v0.1.0"; 
     exportDialog.orientation = "column"; 
     exportDialog.alignChildren = ["fill","top"]; 
     exportDialog.spacing = 10; 
@@ -1121,7 +1125,7 @@ var myPath = (app.activeDocument.fullName.parent.fsName).toString().replace(/\\/
 var docName = (app.activeDocument.name).split('.ai')[0];
 // var myScriptPath = (File(app.activeScript.fullName).parent.fsName).toString().replace(/\\/g, '/');
 var scriptPath = File($.fileName).path;
-
+// alert(scriptPath)
 ////////////////////////////////////////////
 //
 // Settings functions
@@ -1175,15 +1179,39 @@ function getSettings(){
 
 }
 
+///////////////////////////////////////////////////
+// Get OS
+// fromt "_LastLogEntry.jsx"
+///////////////////////////////////////////////////
+isWindows = function() {
+  return $.os.match(/windows/i);
+};
+isMac = function() {
+  return !isWindows();
+};
+
+// alert(isMac()==true)
 var file = File();
-var filePath = scriptPath+'/.'+docName;
+var pathFile = File($.fileName).path;
+var filePath = File(pathFile+"/"+"."+docName); //+".json");
+// var filePath = isMac()==true ? scriptPath+'/.'+docName+".txt" : scriptPath+'/.'+docName+".txt";
+// var filePath = '/Users/promotiespullen/Desktop/_Export';
+// var filePath = '/Applications/folder/writefileosx.txt';
+// var filePath = '/Applications/Adobe Illustrator 2025/Presets/en_US/Scripts/writefileosx.txt';
+// var filePath = isMac()==true ? '/Macintosh /HD'+scriptPath+'/.'+docName : scriptPath+'/.'+docName+" asdasdasdas";
+// var filePath = isMac()==true ? '/Macintosh /HD' : "False";
 
 // write Settings File:
 function writeSettings(){
-    file = File(filePath);
-    file.open('w')
-    file.write(prefs.toSource())
-    file.close()
+    try {
+        file = new File(filePath);
+        // file = (filePath instanceof File) ? filePath : new File(filePath); // new File(filePath);
+        file.write(prefs.toSource())
+        file.close()
+        if (!file.exists) alert("Please check writeing rules folder and parent folder")
+    } catch(e) {
+        alert(e)
+    }
 }
 
 // read Settings File:
