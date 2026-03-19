@@ -15,15 +15,29 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 /*
 
 /////////////////////////////////////////////////////////////////
-// Export Artboards to PDF v0.0.9 -- CC
+// Export Artboards to PDF v0.1.3 -- CC
 
 ///////////////////////////////////////////
 //  KEEPACHANGELOG
     keepachangelog > https://keepachangelog.com/en/1.0.0/
 
-    [v.0.1.0] 2025-11-06
+    [v.0.1.3] 2026-03-19
     Fixed
     - reading and writing stored preferences on OSX
+    Changed
+    - Store settings next to AI file so when exporting in other time, setting turn over. vs in script folder, it makes the folder messy
+    
+    [v.0.1.2] 2026-03-18
+    Fixed
+    - adding seperator in mm bleed is possible now with , or .
+    
+    [v.0.1.1] 2025-12-28
+    Added
+    - use document bleed settings
+
+    [v.0.1.0] 2025-11-06
+    Fixed
+    - reading and writing stored preferences on OSX > wip
     
     [v.0.0.9] 2025-05-09
     Fixed
@@ -51,7 +65,7 @@ Code for Import https://scriptui.joonas.me — (Triple click to select):
 // EXPORTDIALOG
 // ============
 var exportDialog = new Window("dialog"); 
-    exportDialog.text = "Export Artboards to PDF v0.1.0"; 
+    exportDialog.text = "Export Artboards to PDF v0.1.3"; 
     exportDialog.orientation = "column"; 
     exportDialog.alignChildren = ["fill","top"]; 
     exportDialog.spacing = 10; 
@@ -250,6 +264,8 @@ var bleedPnl = pdfSettingsTab.add("panel", undefined, undefined, {name: "bleedPn
 // Doesnt work in script
 // var useDocBleedChb = bleedPnl.add("checkbox", undefined, undefined, {name: "useDocBleedChb"}); 
 //     useDocBleedChb.text = "Use Document Bleed Settings"; 
+var useDocumentBleedCHb = bleedPnl.add("checkbox", undefined, undefined, {name: "useDocumentBleedCHb"}); 
+    useDocumentBleedCHb.text = "Uses document bleed settings";
 
 // BLEEDINPUTGRP
 // =============
@@ -264,16 +280,17 @@ var bleedUnitGrp = bleedPnl.add("group", undefined, {name: "bleedUnitGrp"});
     bleedUnitGrp.spacing = 10; 
     bleedUnitGrp.margins = 0; 
     
+
 var bleedInputGrp = bleedPnl.add("group", undefined, {name: "bleedInputGrp"}); 
     bleedInputGrp.orientation = "row"; 
     bleedInputGrp.alignChildren = ["left","center"]; 
     bleedInputGrp.spacing = 10; 
     bleedInputGrp.margins = 0;
 
-
 var bleedUnitLbl = bleedUnitGrp.add("statictext", undefined, undefined, {name: "bleedUnitLbl"}); 
     bleedUnitLbl.text = "Units"; 
     bleedUnitLbl.preferredSize.width = 48; 
+
 
 
 // var bleedUnitsDropDown_array = [("px","Pixels"),("mm","Millimeters"), ("cm","Centimeter"), ("pc", "Picas")]; 
@@ -744,7 +761,7 @@ function savePDF(destFolder, prefix, suffix, activeAB, abIndex, pdfPreset){
     var saveOptions = new PDFSaveOptions();
     // saveOptions.compatibility = PDFCompatibility.ACROBAT6;
     // var pdfProfileAI = "[PDF/X-4:2008]";
-    saveOptions.pDFPreset = pdfPreset; //pdfProfileAI; //? checkPresets(true, pdfProfileAI) : "[High Quality Print]";
+    saveOptions.pdfPreset = pdfPreset; //pdfProfileAI; //? checkPresets(true, pdfProfileAI) : "[High Quality Print]";
     saveOptions.generateThumbnails = embedThumbsCHb.value;
     saveOptions.preserveEditiballityCHb = optimizePdfCHb.value;
     saveOptions.preserveEditability = preserveEditiballityCHb.value;
@@ -925,6 +942,7 @@ var mouseEvntHandKeepProportions = function(event) {
     event.target.notify("onDraw");  
 }  
   
+
 keepProportionsBtn.addEventListener('mouseover', mouseEvntHandKeepProportions, false);  
 keepProportionsBtn.addEventListener('mouseout', mouseEvntHandKeepProportions, false);  
 keepProportionsBtn.addEventListener('mousedown', mouseEvntHandKeepProportions, false);  
@@ -968,20 +986,49 @@ function addUnits(){
     var bT = bleedTopTxt.text;
     var bR = bleedRightTxt.text;
     var bB = bleedBottomTxt.text;
-    var bleedLeft = bL.replace(/\D/g, "");
-    var bleedTop = bT.replace(/\D/g, "");
-    var bleedRight = bR.replace(/\D/g, "");
-    var bleedBottom = bB.replace(/\D/g, "");
+    // alert(bB)
+    // alert(bB.replace(/\D/g, ""))
+    // alert(bB.replace(/[^\d,.]/g, ""))
+    var bleedLeft = bL.replace(/[^\d,.]/g, "");
+    var bleedTop = bT.replace(/[^\d,.]/g, "");
+    var bleedRight = bR.replace(/[^\d,.]/g, "");
+    var bleedBottom = bB.replace(/[^\d,.]/g, "");
+    // removes the separator 18032026
+    // var bleedLeft = bL.replace(/\D/g, "");
+    // var bleedTop = bT.replace(/\D/g, "");
+    // var bleedRight = bR.replace(/\D/g, "");
+    // var bleedBottom = bB.replace(/\D/g, "");
+
     // alert(bleedBottom)
     // var remove = new Regex("[^0-9.]");
-    var patt = /^[0-9]{1,3}$/g; ///\d/g;
+    // var patt = /^[0-9]{1,3}$/g; ///\d/g;
+    // keep , or .
+    // alert(bleedBottom)
+    var patt = /^[0-9,.]{1,3}$/g; ///\d/g;
     var results = bleedBottom.match(patt)
     var resultValues = results != null;
     var unitValue = " "+bleedUnitsDropDown.selection.text;
     // var filter = value.Replace("/^[^0-9.]", "");
     // var r = new Regex("(?:^|[^w.,])(\d[\d,.]+)(?=\W|$)/)");
-    var r = /^[0-9]{1,3}$/g;
+    // var r = /^[0-9]{1,3}$/g;
+    // keep , or .
+    var r = /^[0-9,.]{1,3}$/g;
     // alert(unitValue)
+
+    // 20260319
+    // If bleed is not set, use 0
+    if (bleedLeft==""){ // || "NaN" || NaN){
+        bleedLeft = 0
+    }
+    if (bleedTop==""){//"" || "NaN" || NaN){
+        bleedTop = 0
+    }
+    if (bleedBottom==""){//"" || "NaN" || NaN){
+        bleedBottom = 0
+    }
+    if (bleedRight==""){//"" || "NaN" || NaN){
+        bleedRight = 0
+    }
 
     // https://github.com/wearebraid/vue-formulate/issues/67
     // var strippedValue = x.replace(/[^0-9]/g, ""); 
@@ -990,14 +1037,15 @@ function addUnits(){
     // alert(Boolean(resultValues)===true)
     if (resultValues) {
         if (keepProportions) {
-            bleedLeftTxt.text = bleedTopTxt.text = bleedBottomTxt.text = bleedRightTxt.text = bleedBottom + unitValue;
+            // bL = bT = bB = bR = bleedBottom + unitValue;
+            bleedLeftTxt.text = bleedTopTxt.text = bleedRightTxt.text = bleedBottomTxt.text = bleedBottom + unitValue;
         }
     }
     if(!keepProportions) {
         bleedLeftTxt.text = bleedLeft + unitValue
         bleedTopTxt.text = bleedTop + unitValue
-        bleedBottomTxt.text = bleedBottom + unitValue
-        bleedRightTxt.text = bleedRight + unitValue
+        bleedRightTxt.text = bleedBottom + unitValue
+        bleedBottomTxt.text = bleedRight + unitValue
     }
 }
 
@@ -1025,6 +1073,95 @@ function setUnits(unit){
         }
     }
 }
+
+// Doesnt fire?
+// useDocumentBleedCHb.onChange = function(){
+//     // alert("test")
+//     // alert(this)
+//     alert(this.value)
+//     if (this.value == true) {
+//         bleedTopTxt.enabled = false;
+//         bleedBottomTxt.enabled = false;
+//         bleedLeftTxt.enabled = false;
+//         bleedRightTxt.enabled = false;
+//     } else {
+//         bleedTopTxt.enabled = true;
+//         bleedBottomTxt.enabled = true;
+//         bleedLeftTxt.enabled = true;
+//         bleedRightTxt.enabled = true;
+//     }
+//     addUnits()
+// }
+
+// 2026-03-18
+// Mouse EVentListener 
+// Issue dont work properly, only catches mousedowna and thus not the change, so we flip the value we need
+function mouseEventUseDocBleed(event){
+// var mouseEventUseDocBleed = function(event) {  
+    // switch (event.type) {  
+    // alert("test")
+    // alert(event)
+    // alert(this.value)
+    // alert(event.type)
+    // alert(this)
+    // alert(event.value)
+
+    if (this.value == false) {
+        // bleedTopTxt.enabled = false;
+        // bleedBottomTxt.enabled = false;
+        // bleedLeftTxt.enabled = false;
+        // bleedRightTxt.enabled = false;
+        bleedInputGrp.enabled = false;
+        bleedUnitGrp.enabled = false;
+        // bleedUnitsDropDown.enabled = false;
+        // setProportionsBtn(keepProportionsBtn,false)
+    } else {
+        // bleedTopTxt.enabled = true;
+        // bleedBottomTxt.enabled = true;
+        // bleedLeftTxt.enabled = true;
+        // bleedRightTxt.enabled = true;
+        bleedInputGrp.enabled = true;
+        bleedUnitGrp.enabled = true;
+        // bleedUnitsDropDown.enabled = true;
+        // setProportionsBtn(keepProportionsBtn,true)
+    }
+    addUnits()
+}
+// 20260319
+// After calling script, we use reversed method to compensate eventlsitner not readcting to other then mousedown
+function afterloadUseDocBleed(value){
+
+    if (value == true) {
+        bleedInputGrp.enabled = false;
+        bleedUnitGrp.enabled = false;
+    } else {
+        bleedInputGrp.enabled = true;
+        bleedUnitGrp.enabled = true;
+    }
+    addUnits()
+}
+// useDocumentBleedCHb.addEventListener('blur', mouseEventUseDocBleed, false);
+// useDocumentBleedCHb.addEventListener('change', mouseEventUseDocBleed, false);
+useDocumentBleedCHb.addEventListener('mousedown', mouseEventUseDocBleed, false);
+// useDocumentBleedCHb.addEventListener('mouseup', mouseEventUseDocBleed, false);
+// , e => {
+//     alert(e.value)
+//     alert(e.value)
+//     if (this.value == true) {
+//         bleedTopTxt.enabled = false;
+//         bleedBottomTxt.enabled = false;
+//         bleedLeftTxt.enabled = false;
+//         bleedRightTxt.enabled = false;
+//     } else {
+//         bleedTopTxt.enabled = true;
+//         bleedBottomTxt.enabled = true;
+//         bleedLeftTxt.enabled = true;
+//         bleedRightTxt.enabled = true;
+//     }
+//     addUnits()
+// }, false);  
+
+
 bleedTopTxt.onChange = function() {
     // setUnits("top")
 
@@ -1121,8 +1258,8 @@ function convertToUnit(value, unit) {
 // source: https://stackoverflow.com/questions/10626893/extendscript-current-script-path
 //
 ////////////////////////////////////////////
-var myPath = (app.activeDocument.fullName.parent.fsName).toString().replace(/\\/g, '/');
-var docName = (app.activeDocument.name).split('.ai')[0];
+var docPath = (app.activeDocument.fullName.parent.fsName).toString().replace(/\\/g, '/');
+var docName = (app.activeDocument.name).split('.')[0];
 // var myScriptPath = (File(app.activeScript.fullName).parent.fsName).toString().replace(/\\/g, '/');
 var scriptPath = File($.fileName).path;
 // alert(scriptPath)
@@ -1153,6 +1290,7 @@ function getSettings(){
     prefs.acrobatLayers = createLayersCHb.value;
 
     // Bleed
+    prefs.useDocumentBleed = useDocumentBleedCHb.value;
     prefs.bleedUnits = bleedUnitsDropDown.selection.index;
     prefs.keepProportions = keepProportions;
     prefs.bleedLeft = Number(bleedLeftTxt.text);
@@ -1179,6 +1317,45 @@ function getSettings(){
 
 }
 
+
+
+
+///////////////////////////////////////////////////
+// Create   Folder Issue for OSX fix
+// From     Adobe COmmunities
+// Url      https://community.adobe.com/questions-671/extendscript-oddity-with-file-folder-on-mac-os-x-837533
+///////////////////////////////////////////////////
+function newFolder(filePath){
+    var retVal;
+    do {
+        try{
+            if (File.fs != "Macintosh"){
+                break;
+            }
+            if (filePath.match(/^\/Volumes\//i) != null){
+                alert(filePath.match(/^\/Volumes\//i))
+                break;
+            }
+            if (filePath.charAt(0) == "~"){
+                filePath = File("~").fsName + filePath.substr(1);
+            }
+            else if (filePath.charAt(0) != "/"){
+                break;
+            }
+            var rootVolumeName = File("/").parent.displayName;
+            retVal = new Folder("/Volumes/" + rootVolumeName + "/" + filePath);
+        }
+        catch (error){
+        }
+    }
+    while (false);
+        if (retVal == null){
+            retVal = new Folder(filePath);
+        }
+    alert(retVal)
+    return retVal;
+}
+
 ///////////////////////////////////////////////////
 // Get OS
 // fromt "_LastLogEntry.jsx"
@@ -1190,10 +1367,39 @@ isMac = function() {
   return !isWindows();
 };
 
+osCheck = function() {
+  if ($.os.match(/windows/i)){
+    // alert("win")
+    return File($.fileName).path
+  } else {
+    // return File($.fileName).fsName
+    // alert(Folder($.fileName).parent.fsName)
+    // From SPecify
+    alert(Folder($.fileName).parent.fsName)
+    return Folder($.fileName).parent.fsName
+  }
+};
+
 // alert(isMac()==true)
-var file = File();
-var pathFile = File($.fileName).path;
-var filePath = File(pathFile+"/"+"."+docName); //+".json");
+// var file = File();
+var useDocPath = true
+if (useDocPath==true){
+    var pathFile = docPath;
+
+} else {
+    var pathFile = File($.fileName).path;
+}
+
+// var pathFile = osCheck();
+// alert(pathFile)
+// alert(File($.fileName).path)
+// alert(File($.fileName))
+// alert(File($.fileName).fsName)
+// alert("pathFile "+pathFile)
+// var filePath = new File(pathFile+"/"+"."+docName); //+".json");
+// alert(docName)
+var filePath = pathFile+"/"+"."+docName //+".json");
+// alert("filePath "+filePath)
 // var filePath = isMac()==true ? scriptPath+'/.'+docName+".txt" : scriptPath+'/.'+docName+".txt";
 // var filePath = '/Users/promotiespullen/Desktop/_Export';
 // var filePath = '/Applications/folder/writefileosx.txt';
@@ -1204,14 +1410,27 @@ var filePath = File(pathFile+"/"+"."+docName); //+".json");
 // write Settings File:
 function writeSettings(){
     try {
-        file = new File(filePath);
+        // Forn RenderSwatchLegend . has no issues
+        // var pathFile = File($.fileName).path;
         // file = (filePath instanceof File) ? filePath : new File(filePath); // new File(filePath);
+        // var file = File(pathFile+"/."+docName);
+        var file = File(filePath);
+        file.open('w');
         file.write(prefs.toSource())
         file.close()
+        // $.sleep(0.5)
         if (!file.exists) alert("Please check writeing rules folder and parent folder")
     } catch(e) {
         alert(e)
     }
+
+    // old > doesnt work OSX arm
+    // file = File(filePath);
+    // file.open('w')
+    // file.write(prefs.toSource())
+    // file.close()
+    // time.sleep(0.5)
+    // print(file.exists)
 }
 
 // read Settings File:
@@ -1240,6 +1459,7 @@ function readSettings(){
         createLayersCHb.value = prefs.acrobatLayers;
 
         // bleed
+        useDocumentBleedCHb.value = prefs.useDocumentBleed;
         bleedUnitsDropDown.selection = prefs.bleedUnits;
         keepProportions = Boolean(prefs.keepProportions);
         bleedLeftTxt.text= prefs.bleedLeft;
@@ -1265,6 +1485,7 @@ function readSettings(){
         getArtboardsRange()
 
         setProportionsBtn(keepProportionsBtn,keepProportions)
+        afterloadUseDocBleed(useDocumentBleedCHb.value)
     } else {
         vertTabbedPnl_nav.selection = 0;
     }
